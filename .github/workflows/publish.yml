@@ -69,7 +69,5 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "公開"
-        run: npm publish
-        env:
-          NPM_CONFIG_PROVENANCE: true
+        run: npm publish --provenance --access public
         working-directory: "packages/soseki"
