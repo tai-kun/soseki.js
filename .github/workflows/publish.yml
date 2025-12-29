@@ -28,11 +28,8 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-      - name: "Node.js をセットアップ"
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f  # v6.1.0
-        with:
-          node-version: "24.x"
-          registry-url: "https://registry.npmjs.org"
+      - name: "mise をセットアップ"
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5  # v3.5.1
 
       - name: "バージョン確認"
         run: |
@@ -69,5 +66,8 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "公開"
-        run: npm publish --provenance --access public
-        working-directory: "packages/soseki"
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
