@@ -34,9 +34,6 @@ jobs:
           node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
 
-      - name: "npm をセットアップ"
-        run: npm install -g npm@latest
-
       - name: "バージョン確認"
         run: |
           if npm view "soseki@${{ github.event.inputs.version }}" version >/dev/null 2>&1; then
