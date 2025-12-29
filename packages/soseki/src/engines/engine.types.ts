@@ -201,7 +201,7 @@ export interface IEngine {
   start(args: StartEngineArgs): IStopEngine | void;
 
   /**
-   * フォームデータやクエリー パラメーターを送信します。
+   * フォームデータやクエリーパラメーターを送信します。
    *
    * @param args 送信内容と送信先を含む引数です。
    */

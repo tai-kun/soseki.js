@@ -4,6 +4,7 @@ import type { ReadonlyURLSearchParams } from "../core/readonly-url.types.js";
 import type { IAction } from "../core/route.types.js";
 import useRouteContext from "./_use-route-context.js";
 import useRouterContext from "./_use-router-context.js";
+import useFormAction from "./use-form-action.js";
 
 /**
  * GET メソッドによる送信時のオプションです。
@@ -53,7 +54,7 @@ export interface ISubmit {
   (target: ReadonlyFormData, options?: SubmitPostOptions | undefined): void;
 
   /**
-   * URL クエリー パラメーターを送信します。
+   * URL クエリーパラメーターを送信します。
    *
    * @param target 送信対象の URL クエリーパラメーターです。
    * @param options 送信時のオプションです。
@@ -75,13 +76,13 @@ export interface ISubmit {
  * @returns データを送信するための ISubmit 関数を返します。
  */
 export default function useSubmit(): ISubmit {
-  const { urlPath } = useRouteContext();
+  const formAction = useFormAction();
   const call = useRouterContext(router => router.submit);
   return React.useCallback(
     function submit(target, options = {}) {
       if (target instanceof FormData) {
         const {
-          action = urlPath,
+          action = formAction,
           actionId,
         } = options as SubmitPostOptions;
         return call({
@@ -91,7 +92,7 @@ export default function useSubmit(): ISubmit {
         });
       } else {
         const {
-          action = urlPath,
+          action = formAction,
           replace,
         } = options as SubmitGetOptions;
         return call({
@@ -105,7 +106,7 @@ export default function useSubmit(): ISubmit {
     },
     [
       call,
-      urlPath,
+      formAction,
     ],
   );
 }
