@@ -39,14 +39,15 @@ jobs:
           fi
 
       - name: "依存関係をインストール"
-        run: bun i
+        run: npm install
 
       - name: "ビルド"
         run: mise run build
+        working-directory: "packages/soseki"
 
       - name: "バージョンを更新"
-        run: |
-          npm version '${{ github.event.inputs.version }}'
+        run: npm version '${{ github.event.inputs.version }}'
+        working-directory: "packages/soseki"
 
       - name: "すでにタグがあれば削除"
         run: |
@@ -54,6 +55,7 @@ jobs:
             git tag -d v${{ github.event.inputs.version }}
             git push origin --delete v${{ github.event.inputs.version }} || true
           fi
+        working-directory: "packages/soseki"
 
       - name: "タグ打ち"
         run: |
@@ -61,6 +63,7 @@ jobs:
           git push origin v${{ github.event.inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: "packages/soseki"
 
       - name: "公開"
         run: |
@@ -68,3 +71,4 @@ jobs:
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: "packages/soseki"
