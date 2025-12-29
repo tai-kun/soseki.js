@@ -1,0 +1,12 @@
+{
+  "name": "sosekijs-project",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "dprint": "^0.50.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "soseki",
+  "version": "0.0.0",
+  "description": "",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/soseki.d.ts",
+      "default": "./dist/soseki.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    }
+  },
+  "dependencies": {
+    "regexparam": "^3.0.0",
+    "type-name": "^2.0.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "valibot": "^1.0.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.5",
+    "@tsconfig/strictest": "^2.0.8",
+    "@types/node": "^22.19.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/type-name": "^1.0.32",
+    "@vitest/browser": "^4.0.16",
+    "@vitest/browser-playwright": "^4.0.16",
+    "@vitejs/plugin-react": "^5.1.2",
+    "dependency-cruiser": "^17.3.5",
+    "navigation-api-types": "^0.6.1",
+    "npm-check-updates": "^19.2.0",
+    "playwright": "^1.57.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "valibot": "^1.2.0",
+    "vitest": "^4.0.16",
+    "vitest-browser-react": "^2.0.2"
+  }
+}

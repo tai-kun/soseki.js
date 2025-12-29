@@ -1,0 +1,12 @@
+[tools]
+node = "22"
+
+[tasks.update]
+run = [
+    "mise upgrade",
+    "npx npm-check-updates --target minor -u --cooldown 3",
+    "npm install",
+    "npx dprint config update",
+    "npm audit",
+    "cd packages/soseki && mise update",
+]

@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "@tsconfig/strictest"
+  ],
+  "include": [
+    "./env.d.ts",
+    "../src/**/*"
+  ],
+  "compilerOptions": {
+    "types": [
+      "navigation-api-types",
+      "./navigation-api.d.ts"
+    ],
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
+    "jsx": "preserve",
+    "noEmit": false,
+    "outDir": "../dist",
+    "declaration": true,
+    "declarationMap": true,
+    "target": "es2020",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "erasableSyntaxOnly": true
+  }
+}

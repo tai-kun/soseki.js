@@ -1,0 +1,28 @@
+[tools]
+node = "22"
+
+[tasks.test]
+run = [
+    { task = "test:client" },
+    { task = "test:typecheck" },
+]
+
+[tasks."test:client"]
+run = "npx vitest --config ./.config/vitest.client.ts"
+
+[tasks."test:typecheck"]
+run = "npx tsc --noEmit --project ./.config/tsconfig.test.json"
+
+[tasks.update]
+run = [
+    "npx npm-check-updates --target minor -u --cooldown 3",
+    "npm install",
+    "npx playwright install chromium --with-deps",
+    "npm audit",
+]
+
+[tasks.build]
+run = "npx tsc --project ./.config/tsconfig.build.json"
+
+[tasks.doc]
+run = "npx depcruise src --include-only '^src' --output-type dot --config .config/dependency-cruiser.cjs | dot -T svg > ../doc/public/dependency-graph.svg"
