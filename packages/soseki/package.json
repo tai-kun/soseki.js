@@ -48,5 +48,9 @@
   },
   "scripts": {
     "build": "tsc --project ./.config/tsconfig.build.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
