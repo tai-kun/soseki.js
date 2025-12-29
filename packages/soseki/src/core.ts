@@ -1,4 +1,4 @@
-export { default as Router } from "./components/outlet.jsx";
+export { default as Router } from "./components/router.jsx";
 export type * from "./components/router.jsx";
 
 export type * from "./contexts/route-context.js";
