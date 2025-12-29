@@ -69,5 +69,7 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "公開"
-        run: npm publish --provenance --access public
+        run: |
+          echo 'registry=https://registry.npmjs.org' >~/.npmrc
+          npm publish --provenance --access public
         working-directory: "packages/soseki"
