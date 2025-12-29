@@ -27,5 +27,5 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "ビルド"
-        run: mise run build
+        run: npm run build
         working-directory: "packages/soseki"

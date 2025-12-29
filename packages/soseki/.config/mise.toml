@@ -21,8 +21,5 @@ run = [
     "npm audit",
 ]
 
-[tasks.build]
-run = "npx tsc --project ./.config/tsconfig.build.json"
-
 [tasks.doc]
 run = "npx depcruise src --include-only '^src' --output-type dot --config .config/dependency-cruiser.cjs | dot -T svg > ../doc/public/dependency-graph.svg"

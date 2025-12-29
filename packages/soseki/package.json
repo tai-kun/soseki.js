@@ -45,5 +45,8 @@
     "valibot": "^1.2.0",
     "vitest": "^4.0.16",
     "vitest-browser-react": "^2.0.2"
+  },
+  "scripts": {
+    "build": "tsc --project ./.config/tsconfig.build.json"
   }
 }
