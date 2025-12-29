@@ -12,13 +12,13 @@ defaults:
   run:
     shell: bash -euo pipefail {0}
 
-permissions:
-  contents: write
-
 jobs:
   publish:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    permissions:
+        contents: write
+        id-token: write
     steps:
       - name: "チェックアウト"
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: "依存関係をインストール"
-        run: npm install
+        run: npm ci
 
       - name: "ビルド"
         run: mise run build
@@ -66,9 +66,5 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "公開"
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
         working-directory: "packages/soseki"
