@@ -31,6 +31,9 @@ jobs:
       - name: "mise をセットアップ"
         uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5  # v3.5.1
 
+      - name: "npm をセットアップ"
+        run: npm install -g npm@latest
+
       - name: "バージョン確認"
         run: |
           if npm view "soseki@${{ github.event.inputs.version }}" version >/dev/null 2>&1; then
