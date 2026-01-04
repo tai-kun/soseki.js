@@ -44,7 +44,7 @@ jobs:
         run: npm install -g npm@latest
 
       - name: "ビルド"
-        run: npx tsc --project ./.config/tsconfig.build.json
+        run: npm run build
         working-directory: "packages/soseki"
 
       - name: "バージョンを更新"
@@ -70,3 +70,12 @@ jobs:
       - name: "公開"
         run: npm publish --access public
         working-directory: "packages/soseki"
+
+      - name: "npm ログをアップロード"
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: npm-logs-publish
+          path: /home/runner/.npm/_logs/*.log
+          if-no-files-found: ignore
+          retention-days: 7
