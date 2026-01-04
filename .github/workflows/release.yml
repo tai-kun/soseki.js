@@ -5,8 +5,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "バージョン (e.g., 1.2.3)"
+        description: "バージョン（例： 1.2.3）"
         required: true
+      force:
+        description: '既存のタグがある場合に上書きする'
+        required: false
+        type: boolean
+        default: false
 
 defaults:
   run:
@@ -29,6 +34,8 @@ jobs:
 
       - name: "チェックアウト"
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        with:
+          fetch-depth: 0 # すべての履歴とタグを取得
 
       - name: "Node.js をセットアップ"
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f  # v6.1.0
@@ -63,8 +70,16 @@ jobs:
 
       - name: "タグ打ち"
         run: |
-          git tag v${{ github.event.inputs.version }}
-          git push origin v${{ github.event.inputs.version }}
+          TAG_NAME="v${{ inputs.version }}"
+          if [ "${{ inputs.force }}" = "true" ]; then
+            echo "タグを強制的に作成：$TAG_NAME"
+            git tag -f "$TAG_NAME"
+            git push origin "$TAG_NAME" --force
+          else
+            echo "タグを作成：$TAG_NAME"
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: "packages/soseki"
