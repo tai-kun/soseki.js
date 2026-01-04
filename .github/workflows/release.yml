@@ -1,4 +1,4 @@
-name: "パッケージを公開"
+name: "リリース"
 run-name: "v${{ github.event.inputs.version }}"
 
 on:
@@ -18,19 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
         contents: write
-        # id-token: write
+        id-token: write
     steps:
-      - name: "チェックアウト"
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
-
-      - name: "Git の設定"
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-
-      - name: "mise をセットアップ"
-        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5  # v3.5.1
-
       - name: "バージョン確認"
         run: |
           if npm view "soseki@${{ github.event.inputs.version }}" version >/dev/null 2>&1; then
@@ -38,11 +27,24 @@ jobs:
             exit 1
           fi
 
+      - name: "チェックアウト"
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+
+      - name: "Node.js をセットアップ"
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f  # v6.1.0
+        with:
+          node-version: 22.x
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
       - name: "依存関係をインストール"
         run: npm ci
 
+      - name: "npm を最新にする"
+        run: npm install -g npm@latest
+
       - name: "ビルド"
-        run: npm run build
+        run: npx tsc --project ./.config/tsconfig.build.json
         working-directory: "packages/soseki"
 
       - name: "バージョンを更新"
@@ -66,9 +68,5 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "公開"
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
         working-directory: "packages/soseki"

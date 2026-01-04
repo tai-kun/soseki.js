@@ -15,9 +15,15 @@
     }
   },
   "files": [
-    "./dist",
-    "./src"
+    "dist",
+    "src",
+    "package.json",
+    "LICENSE"
   ],
+  "homepage": "https://github.com/tai-kun/soseki",
+  "repository": {
+    "url": "https://github.com/tai-kun/soseki"
+  },
   "dependencies": {
     "regexparam": "^3.0.0",
     "type-name": "^2.0.2"
@@ -45,8 +51,5 @@
     "valibot": "^1.2.0",
     "vitest": "^4.0.16",
     "vitest-browser-react": "^2.0.2"
-  },
-  "scripts": {
-    "build": "tsc --project ./.config/tsconfig.build.json"
   }
 }
