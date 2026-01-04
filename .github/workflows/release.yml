@@ -53,9 +53,11 @@ jobs:
 
       - name: "すでにタグがあれば削除"
         run: |
-          if git rev-parse "refs/tags/v${{ github.event.inputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse v${{ github.event.inputs.version }} >/dev/null 2>&1; then
             git tag -d v${{ github.event.inputs.version }}
-            git push origin --delete v${{ github.event.inputs.version }} || true
+          fi
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ github.event.inputs.version }}$"; then
+            git push origin ":refs/tags/v${{ github.event.inputs.version }}"
           fi
         working-directory: "packages/soseki"
 
