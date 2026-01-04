@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "dprint": "^0.50.2",
+    "dprint": "^0.51.1",
     "typescript": "^5.9.3"
   }
 }

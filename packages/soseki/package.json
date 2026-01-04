@@ -23,7 +23,7 @@
   "homepage": "https://github.com/tai-kun/soseki",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tai-kun/soseki"
+    "url": "git+https://github.com/tai-kun/soseki.git"
   },
   "dependencies": {
     "regexparam": "^3.0.0",
