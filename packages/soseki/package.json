@@ -20,9 +20,9 @@
     "package.json",
     "LICENSE"
   ],
-  "homepage": "https://github.com/tai-kun/soseki",
+  "homepage": "https://github.com/tai-kun/soseki.js",
   "repository": {
-    "url": "https://github.com/tai-kun/soseki"
+    "url": "https://github.com/tai-kun/soseki.js"
   },
   "dependencies": {
     "regexparam": "^3.0.0",
