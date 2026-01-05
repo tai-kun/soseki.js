@@ -5,10 +5,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "バージョン（例： 1.2.3）"
+        description: "バージョン（例：1.2.3）"
         required: true
       force:
-        description: '既存のタグがある場合に上書きする'
+        description: "既存のタグがある場合に上書きする"
         required: false
         type: boolean
         default: false
@@ -25,9 +25,15 @@ jobs:
         contents: write
         id-token: write
     steps:
+      - name: "バージョン解析"
+        uses: tai-kun/gha-semver-parser@v1
+        with:
+          version: ${{ github.event.inputs.version }}
+        id: semver
+
       - name: "バージョン確認"
         run: |
-          if npm view "soseki@${{ github.event.inputs.version }}" version >/dev/null 2>&1; then
+          if npm view "@tai-kun/is-promise-like@${{ steps.semver.outputs.version }}" version >/dev/null 2>&1; then
             echo "Error: そのバージョンはすでに存在しています。" >&2
             exit 1
           fi
@@ -53,12 +59,15 @@ jobs:
         working-directory: "packages/soseki"
 
       - name: "バージョンを更新"
-        run: npm version '${{ github.event.inputs.version }}'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          npm version '${{ steps.semver.outputs.version }}'
         working-directory: "packages/soseki"
 
       - name: "タグ打ち"
         run: |
-          TAG_NAME="v${{ inputs.version }}"
+          TAG_NAME="v${{ steps.semver.outputs.version }}"
           if [ "${{ inputs.force }}" = "true" ]; then
             echo "タグを強制的に作成：$TAG_NAME"
             git tag -f "$TAG_NAME"
@@ -74,8 +83,6 @@ jobs:
 
       - name: "公開"
         run: npm publish
-        env:
-          NPM_CONFIG_PROVENANCE: true
         working-directory: "packages/soseki"
 
       - name: "npm ログをアップロード"
