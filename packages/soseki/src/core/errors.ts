@@ -1,37 +1,13 @@
+import { isPromiseLike } from "@tai-kun/is-promise-like";
+import { type ErrorMeta, I18nErrorBase, initErrorMessage, setErrorMessage } from "i18n-error-base";
 import getTypeName from "type-name";
-import { type BaseIssue, getGlobalConfig } from "valibot";
-import isPromiseLike from "./_is-promise-like.js";
-import singleton from "./_singleton.js";
+import { type BaseIssue } from "valibot";
 
 /***************************************************************************************************
  *
  * 型
  *
  **************************************************************************************************/
-
-/**
- * エラーのオプションです。
- */
-export type ErrorOptions = Readonly<{
-  /**
-   * エラーの原因です。
-   */
-  cause?: unknown;
-}>;
-
-/**
- * エラーに紐づくメタデータです。
- */
-export type ErrorMeta = {
-  readonly [prop: string]: unknown;
-};
-
-/**
- * soseki におけるエラーのコンストラクターです。
- */
-export interface ISosekiErrorConstructor {
-  new(...args: any): ErrorBase<ErrorMeta | undefined>;
-}
 
 /**
  * 検証エラーの問題点です。
@@ -43,65 +19,6 @@ export type Issue = BaseIssue<unknown>;
  * ユーティリティー
  *
  **************************************************************************************************/
-
-/**
- * エラーコンストラクターと言語ごとのエラーメッセージ作成関数のマップを取得します。
- *
- * @returns エラーコンストラクターと言語ごとのエラーメッセージ作成関数のマップです。
- */
-function getMessage(): WeakMap<Function | object, Map<string, (error: any) => string>> {
-  return singleton("errors__message", () => new WeakMap());
-}
-
-/**
- * エラーコンストラクター内でメッセージプロパティーを初期化します。
- *
- * @template TInstance エラーオブジェクトの型です。
- * @param instance エラーオブジェクトです。
- * @param message エラーメッセージです。
- */
-function initMessage<TInstance extends Error>(
-  instance: TInstance,
-  message: (error: TInstance) => string,
-): void {
-  const reference = instance.constructor;
-  const { lang = "en" } = getGlobalConfig();
-  const msg = getMessage();
-  const store = msg.get(reference);
-  const genMessage = store?.get(lang) ?? message;
-  instance.message = genMessage(instance);
-}
-
-/**
- * soseki のエラーに特定の言語でエラーメッセージを設定します。
- *
- * @template TReference soseki のエラーコンストラクターの型です。
- * @param reference soseki のエラーコンストラクターです。
- * @param message エラーメッセージです。
- * @param lang 言語です。
- * @example
- * ```ts
- * setErrorMessage(
- *   TypeError,
- *   ({ meta }) => `${meta.expected} を期待しましたが、${meta.actual} を得ました`,
- *   "ja",
- * );
- * ```
- */
-export function setErrorMessage<TReference extends ISosekiErrorConstructor>(
-  reference: TReference,
-  message: (error: InstanceType<TReference>) => string,
-  lang: string,
-): void {
-  const msg = getMessage();
-  let store = msg.get(reference);
-  if (store === undefined) {
-    store = new Map();
-    msg.set(reference, store);
-  }
-
-  store.set(lang, message);
-}
 
 /**
  * あらゆる値を文字列に整形します。
@@ -128,25 +45,9 @@ function formatErrorValue(value: unknown): string {
  *
  * @template TMeta エラーに紐づくメタデータです。
  */
-export class ErrorBase<TMeta extends ErrorMeta | undefined = undefined> extends Error {
-  /**
-   * エラーのメタデータです。
-   */
-  public meta: Readonly<TMeta>;
-
-  /**
-   * @internal
-   */
-  public constructor(options: ErrorOptions | undefined, meta: TMeta) {
-    super("", options);
-
-    if (!("cause" in this) && options && "cause" in options) {
-      this.cause = options.cause;
-    }
-
-    this.meta = meta;
-  }
-}
+export class ErrorBase<TMeta extends ErrorMeta | undefined = undefined>
+  extends I18nErrorBase<TMeta>
+{}
 
 /**************************************************************************************************/
 
@@ -171,7 +72,7 @@ export class UnreachableError extends ErrorBase<{
    */
   public constructor(args: [never?], options?: ErrorOptions | undefined) {
     super(options, args.length > 0 ? { value: args[0] } : {});
-    initMessage(this, ({ meta }) => (
+    initErrorMessage(this, ({ meta }) => (
       "value" in meta
         ? "Encountered impossible value: " + formatErrorValue(meta.value)
         : "Unreachable code reached"
@@ -339,7 +240,7 @@ export class ActionConditionError extends ErrorBase<{
       returnValue,
       shouldAction,
     });
-    initMessage(
+    initErrorMessage(
       this,
       ({ meta }) =>
         isPromiseLike(meta.returnValue)
@@ -414,7 +315,7 @@ export class ActionExecutionError extends ErrorBase<{
       url,
       errors,
     });
-    initMessage(
+    initErrorMessage(
       this,
       ({ meta }) => `Errors occurred in ${meta.errors.length} action(s)`,
     );
@@ -463,7 +364,7 @@ export class MultipleRedirectError extends ErrorBase<{
       url,
       redirects,
     });
-    initMessage(
+    initErrorMessage(
       this,
       ({ meta }) => `Multiple redirects detected: ${meta.redirects.join(", ")}`,
     );
@@ -520,7 +421,7 @@ export class LoaderConditionError extends ErrorBase<{
       returnValue,
       shouldLoader,
     });
-    initMessage(
+    initErrorMessage(
       this,
       ({ meta }) =>
         isPromiseLike(meta.returnValue)
@@ -565,7 +466,7 @@ export class NavigationApiNotSupportedError extends ErrorBase<{
         ? window.navigator.userAgent
         : "unknown",
     });
-    initMessage(
+    initErrorMessage(
       this,
       () => "The Navigation API is not supported in this environment",
     );
@@ -596,7 +497,7 @@ export class RouteContextMissingError extends ErrorBase<undefined> {
   public constructor(options?: ErrorOptions | undefined) {
     // メタデータは不要なため undefined を渡す
     super(options, undefined);
-    initMessage(
+    initErrorMessage(
       this,
       () => "RouteContext not found. Did you forget to wrap your app in <Router />?",
     );
@@ -627,7 +528,7 @@ export class RouterContextMissingError extends ErrorBase<undefined> {
   public constructor(options?: ErrorOptions | undefined) {
     // メタデータは不要なため undefined を渡す
     super(options, undefined);
-    initMessage(
+    initErrorMessage(
       this,
       () => "RouterContext not found. Did you forget to wrap your app in <Router />?",
     );
@@ -666,7 +567,7 @@ export class LoaderDataNotFoundError extends ErrorBase<{
     options?: ErrorOptions | undefined,
   ) {
     super(options, { loader });
-    initMessage(
+    initErrorMessage(
       this,
       ({ meta }) => `Loader data not found (Loader: ${meta.loader.name || "anonymous"})`,
     );

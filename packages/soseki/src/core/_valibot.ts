@@ -1,5 +1,5 @@
+import { tryCaptureStackTrace } from "try-capture-stack-trace";
 import { type InferOutput, rawTransform, type RawTransformAction, safeParse } from "valibot";
-import captureStackTrace from "./_capture-stack-trace.js";
 import isError from "./_is-error.js";
 import { UnexpectedValidationError } from "./errors.js";
 
@@ -142,6 +142,6 @@ export function expect<const TSchema extends BaseSchema>(
   }
 
   const error = new UnexpectedValidationError(result.issues, input);
-  captureStackTrace(error, expect);
+  tryCaptureStackTrace(error, expect);
   throw error;
 }

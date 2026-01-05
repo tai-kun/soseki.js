@@ -13,7 +13,7 @@ export { default as Outlet } from "./components/outlet.jsx";
 export type * from "./core/deferred-promise.js";
 export { default as DeferredPromise } from "./core/deferred-promise.js";
 
-export type { ErrorMeta, ErrorOptions, ISosekiErrorConstructor, Issue } from "./core/errors.js";
+export type { Issue } from "./core/errors.js";
 export {
   ActionConditionError,
   ActionExecutionError,
@@ -23,7 +23,6 @@ export {
   NavigationApiNotSupportedError,
   RouteContextMissingError,
   RouterContextMissingError,
-  setErrorMessage,
   UnexpectedValidationError,
   UnreachableError,
   ValidationErrorBase,

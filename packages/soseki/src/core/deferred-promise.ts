@@ -1,4 +1,4 @@
-import isPromiseLike from "./_is-promise-like.js";
+import { isPromiseLike } from "@tai-kun/is-promise-like";
 
 /**
  * DeferredPromise の基本型です。

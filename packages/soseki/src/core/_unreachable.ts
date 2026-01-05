@@ -1,4 +1,4 @@
-import captureStackTrace from "./_capture-stack-trace.js";
+import { tryCaptureStackTrace } from "try-capture-stack-trace";
 import { UnreachableError } from "./errors.js";
 
 /**
@@ -15,7 +15,7 @@ function unreachable(value: never): never;
 
 function unreachable(...args: [never?]): never {
   const error = new UnreachableError(args);
-  captureStackTrace(error, unreachable);
+  tryCaptureStackTrace(error, unreachable);
   throw error;
 }
 

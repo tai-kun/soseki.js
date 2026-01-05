@@ -25,7 +25,10 @@
     "url": "https://github.com/tai-kun/soseki.js"
   },
   "dependencies": {
+    "@tai-kun/is-promise-like": "^0.0.4",
+    "i18n-error-base": "^0.0.2",
     "regexparam": "^3.0.0",
+    "try-capture-stack-trace": "^0.0.2",
     "type-name": "^2.0.2"
   },
   "peerDependencies": {
