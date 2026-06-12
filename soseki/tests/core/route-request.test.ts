@@ -22,7 +22,7 @@ describe("インスタンス生成", () => {
       expect(result.method).toBe("GET");
       expect(result.url).toBe(url);
       expect(result.signal).toBe(signal);
-      expect(result.formData).toBeNull();
+      expect(result.formData).toBe(null);
       expectTypeOf(result).toEqualTypeOf<RouteGetRequest>();
       expectTypeOf(result.method).toEqualTypeOf<"GET">();
     });
@@ -42,7 +42,7 @@ describe("インスタンス生成", () => {
       expect(result.method).toBe("GET");
       expect(result.url).toBe(url);
       expect(result.signal).toBe(signal);
-      expect(result.formData).toBeNull();
+      expect(result.formData).toBe(null);
       expectTypeOf(result.method).toEqualTypeOf<"GET" | "POST">();
     });
   });
@@ -108,7 +108,7 @@ describe("Request オブジェクトへの変換機能", () => {
       expect(result).toBeInstanceOf(Request);
       expect(result.url).toBe("https://example.com/");
       expect(result.method).toBe("GET");
-      expect(result.body).toBeNull();
+      expect(result.body).toBe(null);
     });
 
     test("POST インスタンスを変換したとき、メソッドが POST で指定した FormData をボディに持つ Request になる", async ({

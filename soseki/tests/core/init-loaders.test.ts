@@ -123,7 +123,7 @@ test("複数のローダーを渡したとき、すべてのローダーに全�
   initLoaders(routes, request);
 
   // 検証
-  expect(request1).not.toBeUndefined();
+  expect(request1).not.toBe(undefined);
   expect(request1).toStrictEqual(request2);
 });
 
