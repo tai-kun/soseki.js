@@ -1,0 +1,5 @@
+[tasks.update]
+run = ["npx npm-check-updates --target minor -u --cooldown 7", "pnpm install"]
+
+[tasks.start]
+run = "npx vite --config ./.config/vite.config.ts"

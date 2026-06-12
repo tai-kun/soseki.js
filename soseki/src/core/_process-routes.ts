@@ -1,0 +1,54 @@
+import { parse } from "regexparam";
+
+import compareRoutePaths from "./_compare-route-paths.js";
+import RoutePath from "./route-path.js";
+import type { Route, RouteDefinition } from "./route.types.js";
+
+/**
+ * 定義したルーティング設定の配列を、内部のルーティングエンジンが直接利用可能な正規化済みのルートオブジェクトの配列へと変換します。
+ *
+ * 実行内容:
+ * - 各ルートのパス正規化
+ * - 動的解析用の正規表現コンパイル
+ * - 詳細度に基づく優先順位ソート
+ *
+ * @param routes ルーティング定義を格納した読み取り専用の配列です。
+ * @returns 読み取り専用の正規化済みルートオブジェクトの配列です。
+ */
+export default function processRoutes(routes: readonly RouteDefinition[]): readonly Route[] {
+  return (
+    routes
+      .map((route) => {
+        const path = RoutePath.encode(route.path);
+        const index = route.index === true;
+        const { keys: paramKeys, pattern: pathPattern } = parse(
+          path,
+          // インデックスルートでないとき loose オプションを `true` にして子ルートに対してもマッチするようにします。
+          // これにより、前方一致による階層的なマッチングが有効になります。
+          !index,
+        );
+
+        return {
+          path,
+          index,
+          action: route.action,
+          loader: route.loader,
+          // オブジェクト形式またはモジュール形式の双方を安全に評価し、描画対象となる React コンポーネントを確定します。
+          component:
+            typeof route.component === "function"
+              ? route.component
+              : Symbol.toStringTag in route &&
+                  route[Symbol.toStringTag] === "Module" &&
+                  typeof route.default === "function"
+                ? route.default
+                : undefined,
+          paramKeys,
+          pathPattern,
+          shouldReload: route.shouldReload || ((args) => args.defaultShouldReload),
+        };
+      })
+      // すべてのルートを正規化した後、compareRoutePaths 関数を用いて詳細度が高い順にソートします。
+      // マッチング漏れや誤ったルートへの誤認を防ぐため、制限の厳しい（具体的な）パスパターンを持つルートオブジェクトが配列のより前方に配置されます。
+      .sort((a, b) => compareRoutePaths(a.path, b.path))
+  );
+}

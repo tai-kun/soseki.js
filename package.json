@@ -1,12 +1,23 @@
 {
-  "name": "sosekijs-project",
+  "name": "soseki-monorepo",
+  "version": "0.0.0",
   "private": true,
-  "type": "module",
+  "homepage": "https://github.com/tai-kun/soseki",
+  "license": "MIT",
+  "author": "tai-kun",
+  "repository": {
+    "url": "https://github.com/tai-kun/soseki"
+  },
   "workspaces": [
-    "packages/*"
+    "soseki",
+    "examples/basic"
   ],
+  "type": "module",
   "devDependencies": {
-    "dprint": "^0.51.1",
-    "typescript": "^5.9.3"
+    "npm-check-updates": "^22.2.1",
+    "oxfmt": "0.45.0",
+    "oxlint": "1.60.0",
+    "oxlint-tsgolint": "0.21.1",
+    "typescript": "^6.0.3"
   }
 }

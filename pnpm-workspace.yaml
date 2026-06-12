@@ -1,0 +1,18 @@
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - abort-signal-utils
+  - asyncmux
+  - call-fn-once
+  - fast-utf8
+  - inspect-lite
+  - maypromise
+  - ninja-promise
+  - pgsql-template-tag
+  - unikvs
+  - "@unikvs/*"
+  - "@tai-kun/valibot-extra-lab"
+onlyBuiltDependencies: []
+strictDepBuilds: false
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+packages: ["soseki", "examples/basic"]

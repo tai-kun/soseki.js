@@ -1,12 +1,23 @@
+[settings]
+minimum_release_age = "7d"
+
 [tools]
-node = "22"
+node = "24"
+pnpm = "10"
+
+[tasks.test]
+run = [{ task = "test:format" }]
+
+[tasks."test:format"]
+run = "npx oxfmt --config ./.config/.oxfmtrc.json --check"
+
+[tasks.fmt]
+run = "npx oxfmt --config ./.config/.oxfmtrc.json"
 
 [tasks.update]
 run = [
-    "mise upgrade",
-    "npx npm-check-updates --target minor -u --cooldown 3",
-    "npm install",
-    "npx dprint config update",
-    "npm audit",
-    "cd packages/soseki && mise update",
+  "npx npm-check-updates --target minor -u --cooldown 7 --reject oxfmt --reject oxlint --reject oxlint-tsgolint",
+  "pnpm install",
+  "for d in $(jq -r '.workspaces[]' package.json | xargs ls -d); do (cd \"$d\" && mise run update); done",
+  "pnpm audit",
 ]

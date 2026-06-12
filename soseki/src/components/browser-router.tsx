@@ -1,0 +1,28 @@
+import type { RouteDefinition } from "../core/route.types.js";
+import NavigationApiEngine from "../engines/navigation-api-engine.js";
+import useSingleton from "../hooks/_use-singleton.js";
+import Router from "./router.jsx";
+
+/**
+ * `BrowserRouter` コンポーネントに引き渡すプロパティーの型定義です。
+ */
+export type BrowserRouterProps = {
+  /**
+   * アプリケーション全体の画面構造を定義したルート定義の配列です。
+   */
+  routes: readonly RouteDefinition[];
+};
+
+/**
+ * ブラウザー環境における SPA ルーティングを開始するための、最上位エントリーポイントコンポーネントです。
+ *
+ * モダンなブラウザー標準の `Navigation API` に依存しています。
+ *
+ * @param props アプリケーションに組み込むルート定義の配列です。
+ */
+export default function BrowserRouter(props: BrowserRouterProps): React.ReactElement {
+  const { routes } = props;
+  const engine = useSingleton(() => new NavigationApiEngine());
+
+  return <Router engine={engine} routes={routes} />;
+}
