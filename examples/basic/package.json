@@ -2,6 +2,9 @@
   "name": "@soseki-examples/basic",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "exit 0"
+  },
   "dependencies": {
     "@tsconfig/strictest": "^2.0.8",
     "@types/node": "^24.12.4",
