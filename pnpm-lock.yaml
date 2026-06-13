@@ -62,6 +62,9 @@ importers:
       '@logtape/logtape':
         specifier: ^2.0.0
         version: 2.1.1
+      '@tai-kun/valibot-extra-lab':
+        specifier: ^0.0.5
+        version: 0.0.5(fast-utf8@0.0.7)(valibot@1.4.1(typescript@6.0.3))
       call-fn-once:
         specifier: ^0.0.6
         version: 0.0.6
@@ -90,9 +93,6 @@ importers:
         specifier: ^1.0.0
         version: 1.4.1(typescript@6.0.3)
     devDependencies:
-      '@tai-kun/valibot-extra-lab':
-        specifier: ^0.0.5
-        version: 0.0.5(fast-utf8@0.0.7)(valibot@1.4.1(typescript@6.0.3))
       '@tsconfig/node24':
         specifier: ^24.0.4
         version: 24.0.4

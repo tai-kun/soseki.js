@@ -36,6 +36,7 @@
     "build": "tsc --project ./.config/tsconfig.build.json"
   },
   "dependencies": {
+    "@tai-kun/valibot-extra-lab": "^0.0.5",
     "call-fn-once": "^0.0.6",
     "i18n-error-base": "^0.0.4",
     "inspect-lite": "^0.0.2",
@@ -46,7 +47,6 @@
     "type-name": "^2.0.2"
   },
   "devDependencies": {
-    "@tai-kun/valibot-extra-lab": "^0.0.5",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/node": "^24.12.4",
