@@ -1,5 +1,6 @@
 import type { NinjaPromise } from "ninja-promise";
 
+import type { RoutePath } from "../core.js";
 import type { HistoryEntry } from "../core/expect-history-entry.js";
 import type { HistoryEntryId } from "../core/history-entry-id-schema.js";
 import type { MatchedRoute } from "../core/match-routes.js";
@@ -178,7 +179,7 @@ export namespace IEngine {
               /**
                * URL パスで前方移動する形式です。
                */
-              type: "PATH";
+              type: "STATIC";
 
               /**
                * URL パスです。
@@ -187,24 +188,16 @@ export namespace IEngine {
             }
           | {
               /**
-               * URL の各コンポーネントを個別に指定する形式です。
+               * URL の各コンポーネントを関数形式で個別に指定する形式です。
                */
-              type: "PARTIAL";
+              type: "DYNAMIC";
 
               /**
-               * 最初のスラッシュ `/` から始まる URL のパス部分です。
+               * 動的にパッチを適用する関数です。
+               *
+               * @param path アプリケーション内のルーティングにおけるパスを安全に構築・解析・操作するためのオブジェクトです。
                */
-              pathname?: string | undefined;
-
-              /**
-               * 先頭のクエスチョンマーク `?` を含む URL のクエリー文字列です。
-               */
-              search?: string | undefined;
-
-              /**
-               * URL のハッシュ（シャープ記号 `#` を含むフラグメント識別子）です。
-               */
-              hash?: string | undefined;
+              patch(path: RoutePath): void;
             };
 
         /**

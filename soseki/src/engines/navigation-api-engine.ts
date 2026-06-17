@@ -435,7 +435,7 @@ export default class NavigationApiEngine implements IEngine {
       case "LINK": {
         const { to, history } = args;
         switch (to.type) {
-          case "PATH": {
+          case "STATIC": {
             // 完全なパス文字列の余分なスラッシュなどをエンコードして直接遷移します。
 
             const path = RoutePath.encode(to.path);
@@ -444,25 +444,17 @@ export default class NavigationApiEngine implements IEngine {
             break;
           }
 
-          case "PARTIAL": {
-            // 現在のロケーション情報をベースに、指定されたパーツ（パス名、クエリー、ハッシュのみなど）を部分的にパッチ（上書き）したマージ URL を算出します。
+          case "DYNAMIC": {
+            // 現在のロケーション情報をベースに、指定されたパーツ（パス名、クエリー、ハッシュのみなど）を部分的に上書きしたマージ URL を算出します。
 
             const currentPath = new RoutePath(window.location);
-            const nextPath = new RoutePath(window.location);
-            if (typeof to.pathname === "string") {
-              nextPath.pathname = to.pathname;
-            }
-            if (typeof to.search === "string") {
-              nextPath.search = to.search;
-            }
-            if (typeof to.hash === "string") {
-              nextPath.hash = to.hash;
-            }
-
+            const currentPathString = currentPath.toString();
+            const nextPath = currentPath;
+            to.patch(nextPath);
             const nextPathString = nextPath.toString();
 
             // 無駄な遷移履歴を作らないように、URL に実際の変化がある場合のみ navigate を実行します。
-            if (nextPathString !== currentPath.toString()) {
+            if (nextPathString !== currentPathString) {
               this.navigation.navigate(nextPathString, { history });
             }
 

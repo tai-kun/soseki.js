@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type {} from "../engines/engine.types.js";
+import type { RoutePath } from "../core.js";
 import useRouterContext from "./use-router-context.js";
 
 /**
@@ -25,6 +25,14 @@ export type NavigateTo =
        * 遷移先に付与するハッシュフラグメント（例: `"#profile"`）です。
        */
       readonly hash?: string | undefined;
+    }
+  | {
+      /**
+       * 動的にパッチを適用します。
+       *
+       * @param path アプリケーション内のルーティングにおけるパスを安全に構築・解析・操作するためのオブジェクトです。
+       */
+      (route: RoutePath): void;
     };
 
 /**
@@ -84,7 +92,26 @@ export default function useNavigate(): NavigateFunction {
         return routerNavigate({
           to: {
             path: to,
-            type: "PATH",
+            type: "STATIC",
+          },
+          type: "LINK",
+          history,
+        });
+      } else if (typeof to === "object") {
+        return routerNavigate({
+          to: {
+            type: "DYNAMIC",
+            patch(path) {
+              if (typeof to.pathname === "string") {
+                path.pathname = to.pathname;
+              }
+              if (typeof to.search === "string") {
+                path.search = to.search;
+              }
+              if (typeof to.hash === "string") {
+                path.hash = to.hash;
+              }
+            },
           },
           type: "LINK",
           history,
@@ -92,8 +119,10 @@ export default function useNavigate(): NavigateFunction {
       } else {
         return routerNavigate({
           to: {
-            ...to,
-            type: "PARTIAL",
+            type: "DYNAMIC",
+            patch(path) {
+              to(path);
+            },
           },
           type: "LINK",
           history,
