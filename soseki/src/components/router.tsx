@@ -10,7 +10,7 @@ import processRoutes from "../core/_process-routes.js";
 import type { HistoryEntry } from "../core/expect-history-entry.js";
 import type { HistoryEntryId } from "../core/history-entry-id-schema.js";
 import type { MatchedRoute } from "../core/match-routes.js";
-import type { ActionFunction, LoaderFunction, RouteDefinition } from "../core/route.types.js";
+import type { ActionFunction, LoaderFunction } from "../core/route.types.js";
 import type { IEngine, RouterState } from "../engines/engine.types.js";
 
 /**
@@ -77,6 +77,28 @@ function RouteRenderer(props: RouteRendererProps): React.ReactElement {
   return <ComponentRenderer route={route} outlet={outlet} />;
 }
 
+export type RouterRouteDefinitionObject = {
+  readonly path: string;
+  readonly index?: boolean | undefined;
+  readonly action?: { (args: any): unknown } | undefined;
+  readonly shouldReload?: { (args: any): boolean } | undefined;
+  readonly loader?: { (args: any): unknown } | undefined;
+  readonly component?: React.ComponentType<{}> | undefined;
+};
+
+export type RouterRouteDefinitionModule = {
+  readonly path: string;
+  readonly index?: boolean | undefined;
+  readonly action?: { (args: any): unknown } | undefined;
+  readonly shouldReload?: { (args: any): boolean } | undefined;
+  readonly loader?: { (args: any): unknown } | undefined;
+  readonly component?: React.ComponentType<{}> | undefined;
+  readonly default?: React.ComponentType<{}> | undefined;
+  get [Symbol.toStringTag](): string;
+};
+
+export type RouterRouteDefinition = RouterRouteDefinitionObject | RouterRouteDefinitionModule;
+
 /**
  * `Router` コンポーネントに渡されるルートプロパティーの型定義です。
  */
@@ -89,7 +111,7 @@ export type RouterProps = {
   /**
    * ユーザーがアプリケーションに定義したルート定義の配列です。
    */
-  routes: readonly RouteDefinition[];
+  routes: readonly RouterRouteDefinition[];
 };
 
 /**

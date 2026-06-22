@@ -1,7 +1,6 @@
-import type { RouteDefinition } from "../core/route.types.js";
 import NavigationApiEngine from "../engines/navigation-api-engine.js";
 import useSingleton from "../hooks/_use-singleton.js";
-import Router from "./router.jsx";
+import Router, { type RouterRouteDefinition } from "./router.jsx";
 
 /**
  * `BrowserRouter` コンポーネントに引き渡すプロパティーの型定義です。
@@ -10,7 +9,7 @@ export type BrowserRouterProps = {
   /**
    * アプリケーション全体の画面構造を定義したルート定義の配列です。
    */
-  routes: readonly RouteDefinition[];
+  routes: readonly RouterRouteDefinition[];
 };
 
 /**
