@@ -1,4 +1,4 @@
-import type { ReadonlyURL } from "./readonly-url.types.js";
+import type { ReadonlyURL, ReadonlyURLSearchParams } from "./readonly-url.types.js";
 
 /**
  * 連続する複数のスラッシュを検出するための正規表現です。
@@ -10,7 +10,50 @@ const MULTI_SLASH = /\/\/+/gu;
  *
  * 内包するホストやプロトコルといった余分な情報を排除し、パス、クエリー、ハッシュのみを一貫した規則で管理します。
  */
-export default class RoutePath {
+export interface ReadonlyRoutePath {
+  /**
+   * 正規化されたパス部分の文字列です。
+   */
+  readonly pathname: string;
+
+  /**
+   * 先頭に `?` を含むクエリー文字列です。
+   *
+   * 常にソートされます。
+   */
+  readonly search: string;
+
+  /**
+   * 内部の `URL` インスタンスが保持する、クエリーパラメーターを操作するための `URLSearchParams` オブジェクトを取得します。
+   */
+  readonly searchParams: ReadonlyURLSearchParams;
+
+  /**
+   * 先頭に `#` を含むハッシュ文字列を取得します。
+   */
+  readonly hash: string;
+
+  /**
+   * 現在保持しているすべてのコンポーネントを結合し、ルーティング用のパス文字列として出力します。
+   *
+   * @returns ソート済みのクエリーおよびハッシュを含んだ、正規化されたパス全体の文字列を返します。
+   */
+  toString(): string;
+
+  /**
+   * このインスタンスを複製し、上書き可能な形式で取得します。
+   *
+   * @returns 上書き可能な {@link RoutePath|`RoutePath`} インスタンスです。
+   */
+  clone(): RoutePath;
+}
+
+/**
+ * アプリケーション内のルーティングにおけるパスを安全に構築・解析・操作するためのクラスです。
+ *
+ * 内包するホストやプロトコルといった余分な情報を排除し、パス、クエリー、ハッシュのみを一貫した規則で管理します。
+ */
+export default class RoutePath implements ReadonlyRoutePath {
   /**
    * 与えられた文字列または URL オブジェクトから、正規化されたパス文字列を即座に生成する静的メソッドです。
    *
@@ -26,7 +69,7 @@ export default class RoutePath {
    *
    * 基底となる仮想的なオリジンと結合して管理されます。
    */
-  private url: URL;
+  readonly #url: URL;
 
   /**
    * 新しい `RoutePath` インスタンスを初期化します。
@@ -44,12 +87,12 @@ export default class RoutePath {
     }
 
     // 組み込みの URL クラスによる厳密な解析機能を利用するため、仮想のプロトコルとホストを前置きして初期化します。
-    this.url = new URL("x://y" + path);
+    this.#url = new URL("x://y" + path);
 
     // ルートパス（/）単体である場合を除き、末尾に存在する不要なスラッシュを削除して一貫性を保ちます。
-    const { pathname } = this.url;
+    const { pathname } = this.#url;
     if (pathname !== "/" && pathname.endsWith("/")) {
-      this.url.pathname = pathname.substring(0, pathname.length - 1);
+      this.#url.pathname = pathname.substring(0, pathname.length - 1);
     }
   }
 
@@ -57,16 +100,16 @@ export default class RoutePath {
    * 正規化されたパス部分の文字列です。
    */
   public get pathname(): string {
-    return this.url.pathname;
+    return this.#url.pathname;
   }
 
   public set pathname(value: string) {
-    this.url.pathname = value;
+    this.#url.pathname = value;
 
     // ルートパス（/）単体である場合を除き、末尾に存在する不要なスラッシュを削除して一貫性を保ちます。
-    const pathname = ("/" + this.url.pathname).replace(MULTI_SLASH, "/");
+    const pathname = ("/" + this.#url.pathname).replace(MULTI_SLASH, "/");
     if (pathname !== "/" && pathname.endsWith("/")) {
-      this.url.pathname = pathname.substring(0, pathname.length - 1);
+      this.#url.pathname = pathname.substring(0, pathname.length - 1);
     }
   }
 
@@ -76,30 +119,30 @@ export default class RoutePath {
    * 常にソートされます。
    */
   public get search(): string {
-    this.url.searchParams.sort();
-    return this.url.search;
+    this.#url.searchParams.sort();
+    return this.#url.search;
   }
 
   public set search(value: string) {
-    this.url.search = value;
+    this.#url.search = value;
   }
 
   /**
    * 内部の `URL` インスタンスが保持する、クエリーパラメーターを操作するための `URLSearchParams` オブジェクトを取得します。
    */
   public get searchParams(): URLSearchParams {
-    return this.url.searchParams;
+    return this.#url.searchParams;
   }
 
   /**
    * 先頭に `#` を含むハッシュ文字列を取得します。
    */
   public get hash(): string {
-    return this.url.hash;
+    return this.#url.hash;
   }
 
   public set hash(value: string) {
-    this.url.hash = value;
+    this.#url.hash = value;
   }
 
   /**
@@ -110,5 +153,14 @@ export default class RoutePath {
   public toString(): string {
     const { hash, search, pathname } = this;
     return pathname + search + hash;
+  }
+
+  /**
+   * このインスタンスを複製し、上書き可能な形式で取得します。
+   *
+   * @returns 上書き可能な {@link RoutePath|`RoutePath`} インスタンスです。
+   */
+  public clone(): RoutePath {
+    return new RoutePath(this.toString());
   }
 }

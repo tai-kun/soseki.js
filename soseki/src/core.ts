@@ -34,3 +34,11 @@ export { default as startAction } from "./core/start-action.js";
 
 export type * from "./core/start-loaders.js";
 export { default as startLoaders } from "./core/start-loaders.js";
+
+/**************************************************************************************************/
+
+export type * from "./hooks/use-route-context.js";
+export { default as useRouteContext } from "./hooks/use-route-context.js";
+
+export type * from "./hooks/use-router-context.js";
+export { default as useRouterContext } from "./hooks/use-router-context.js";

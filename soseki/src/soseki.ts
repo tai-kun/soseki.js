@@ -59,6 +59,9 @@ export { default as useNavigate } from "./hooks/use-navigate.js";
 export type * from "./hooks/use-params.js";
 export { default as useParams } from "./hooks/use-params.js";
 
+export type * from "./hooks/use-route-path.js";
+export { default as useRoutePath } from "./hooks/use-route-path.js";
+
 export type * from "./hooks/use-submit.js";
 export { default as useSubmit } from "./hooks/use-submit.js";
 
