@@ -105,8 +105,7 @@ export default class NavigationApiEngine implements IEngine {
      * ユーザーのアクションによって発生したすべての遷移要求をインターセプトして処理する、ルーティングの中枢ハンドラーです。
      */
     const handleNavigate = (event: NavigateEvent): void => {
-      // 処理すべきでない通常のブラウザー固有のナビゲーション（ハッシュ変更、ファイルのダウンロードなど）は、
-      // 標準の挙動を妨げないようにインターセプトせず即座にスルーします。
+      // 処理すべきでない通常のブラウザー固有のナビゲーション（ハッシュ変更、ファイルのダウンロードなど）は、標準の挙動を妨げないようにインターセプトせず即座にスルーします。
       // 参照: https://developer.mozilla.org/docs/Web/API/Navigation_API#handling_a_navigation_using_intercept
       if (
         !event.isTrusted ||
@@ -187,8 +186,7 @@ export default class NavigationApiEngine implements IEngine {
           switch (action.data.status) {
             case "rejected": {
               // アクションがエラーで失敗した場合は、URL を変更せず現在の元のページに強制リダイレクトさせます。
-              const { pathname, search, hash } = currentEntry.url;
-              controller.redirect(pathname + search + hash);
+              controller.redirect(RoutePath.encode(currentEntry.url));
 
               break;
             }
@@ -197,12 +195,12 @@ export default class NavigationApiEngine implements IEngine {
               // アクションが正常終了した場合、返り値にリダイレクト指示が含まれていればその目的地へ遷移させます。
               // リダイレクトがなければそのまま本来の目的地へとブラウザーのコミット先を書き換えます。
               const { redirectTo = currentEntry.url } = actionResponse;
-              const { pathname, search, hash } = redirectTo;
-              controller.redirect(pathname + search + hash);
+              const redirectPath = new RoutePath(redirectTo);
+              controller.redirect(redirectPath.toString());
 
-              redirectUrl.pathname = pathname;
-              redirectUrl.search = search;
-              redirectUrl.hash = hash;
+              redirectUrl.pathname = redirectPath.pathname;
+              redirectUrl.search = redirectPath.search;
+              redirectUrl.hash = redirectPath.hash;
 
               break;
             }
