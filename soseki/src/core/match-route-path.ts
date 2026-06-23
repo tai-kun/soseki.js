@@ -45,8 +45,8 @@ function matchRoutePath(options: MatchRoutePathOptions): boolean;
 /**
  * 指定されたパターンと対象のパス名が一致するかどうかを判定します。
  *
- * @param options 照合の基準となるルーティングのパターン文字列です。
- * @param options 照合対象とする文字列または URL オブジェクトです。
+ * @param pattern 照合の基準となるルーティングのパターン文字列です。
+ * @param target 照合対象とする文字列または URL オブジェクトです。
  * @param options オプションです。
  * @returns パターンに一致した場合は `true` を、一致しない場合は `false` を返します。
  */
