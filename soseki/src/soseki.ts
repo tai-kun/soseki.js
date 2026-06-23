@@ -30,6 +30,9 @@ export {
   NavigationApiNotSupportedError,
 } from "./core/errors.js";
 
+export type * from "./core/match-route-path.js";
+export { default as matchRoutePath } from "./core/match-route-path.js";
+
 export type * from "./core/readonly-form-data.types.js";
 
 export type * from "./core/readonly-url.types.js";
