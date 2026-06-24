@@ -63,7 +63,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
   public static match<const TRoutePattern extends string>(
     routePattern: TRoutePattern,
     target: string | RoutePatternMatchURL,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): boolean {
     return new RoutePatternUtils(routePattern, options).match(target);
   }
@@ -80,7 +80,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
   public static parse<const TRoutePattern extends string>(
     routePattern: TRoutePattern,
     target: string | RoutePatternMatchURL,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): RouteParams<TRoutePattern> {
     return new RoutePatternUtils(routePattern, options).parse(target);
   }
@@ -97,7 +97,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
   public static inject<const TRoutePattern extends string>(
     routePattern: TRoutePattern,
     params: Readonly<RouteParams<TRoutePattern>>,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): string {
     return new RoutePatternUtils(routePattern, options).inject(params);
   }
@@ -122,7 +122,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
     routePattern: TRoutePattern,
     target: string | RoutePatternMatchURL,
     params: Optional<RouteParams<TRoutePattern>>,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): string {
     return new RoutePatternUtils(routePattern, options).replace(target, params);
   }
@@ -139,7 +139,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
   public static parseSafe<const TRoutePattern extends string>(
     routePattern: TRoutePattern,
     target: string | RoutePatternMatchURL,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): RouteParams<TRoutePattern> | null {
     return new RoutePatternUtils(routePattern, options).parseSafe(target);
   }
@@ -164,7 +164,7 @@ export default class RoutePatternUtils<const TRoutePattern extends string = stri
     routePattern: TRoutePattern,
     target: string | RoutePatternMatchURL,
     params: Optional<RouteParams<TRoutePattern>>,
-    options: RoutePatternUtilsOptions,
+    options?: RoutePatternUtilsOptions,
   ): string | null {
     return new RoutePatternUtils(routePattern, options).replaceSafe(target, params);
   }
