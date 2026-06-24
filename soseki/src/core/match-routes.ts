@@ -1,8 +1,5 @@
-import { inject } from "regexparam";
-
-import matchRoutePath from "./_match-route-path.js";
 import type { ReadonlyURL } from "./readonly-url.types.js";
-import type { Route, RoutePathParams } from "./route.types.js";
+import type { Route, RouteParams } from "./route.types.js";
 
 /**
  * URL とのマッチングが確認されたルート情報を表す型定義です。
@@ -13,7 +10,7 @@ export type MatchedRoute = Route & {
   /**
    * 現在の URL パスから抽出された、このルート固有の動的パスパラメーターです。
    */
-  readonly params: RoutePathParams;
+  readonly params: RouteParams;
 
   /**
    * ルートの定義パターン（例: `/users/:id`）に抽出したパラメーター（例: `{ id: "42" }`）を流し込み、具現化されたリクエストパス（例: `/users/42`）です。
@@ -39,15 +36,15 @@ export default function matchRoutes(
   // 登録されているすべてのルートを前方から順番に走査します。
   // routes 配列は詳細度が高い順に並んでいることが前提となります。
   for (const route of routes) {
-    const result = matchRoutePath(route, url);
-    if (!result) {
+    const params = route.utils.parseSafe(url);
+    if (params === null) {
       continue;
     }
 
     matched.push({
       ...route,
-      params: result.params,
-      urlPath: inject(route.path, result.params),
+      params,
+      urlPath: route.utils.inject(params),
     });
   }
 

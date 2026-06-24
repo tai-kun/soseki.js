@@ -1,4 +1,4 @@
-import type { RoutePathParams } from "../core/route.types.js";
+import type { RouteParams } from "../core/route.types.js";
 import useRouteContext from "./use-route-context.js";
 
 /**
@@ -6,6 +6,6 @@ import useRouteContext from "./use-route-context.js";
  *
  * @returns 現在のパスパラメーターを含むオブジェクトを返します。
  */
-export default function useParams<TPath extends string = string>(): RoutePathParams<TPath> {
-  return useRouteContext().params as RoutePathParams<TPath>;
+export default function useParams<TPath extends string = string>(): RouteParams<TPath> {
+  return useRouteContext().params as RouteParams<TPath>;
 }

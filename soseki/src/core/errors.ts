@@ -333,3 +333,55 @@ export class LoaderDataNotFoundError extends ErrorBase<LoaderDataNotFoundErrorMe
       : "ローダーが未定義です。",
   "ja",
 );
+
+/**************************************************************************************************/
+
+/**
+ * ローダーデータの紛失を通知する際に付与されるメタデータの型定義です。
+ */
+export type RoutePatternMismatchErrorMeta = {
+  /**
+   * ルートパターン文字列です。
+   */
+  readonly route: string;
+
+  /**
+   * 検証対象のパス文字列です。
+   */
+  readonly target: string;
+};
+
+/**
+ * `RoutePatternMismatchError` のインスタンスを初期化する際に渡される引数オブジェクトの型定義です。
+ */
+export type RoutePatternMismatchErrorArgs = ErrorOptions & RoutePatternMismatchErrorMeta;
+
+/**
+ * 対象のパスまたは URL が、指定されたルートパターンに一致しない場合に投げるエラーです。
+ */
+export class RoutePatternMismatchError extends ErrorBase<RoutePatternMismatchErrorMeta> {
+  static {
+    this.prototype.name = "SosekiRoutePatternMismatchError";
+  }
+
+  /**
+   * `RoutePatternMismatchError` クラスの新しいインスタンスを初期化します。
+   *
+   * @param args 引数オブジェクトです。
+   */
+  public constructor(args: RoutePatternMismatchErrorArgs) {
+    const { route, target, ...options } = args;
+    super(
+      { route, target },
+      ({ route, target }) =>
+        `The target path "${target}" does not match the route pattern "${route}"`,
+      options,
+    );
+  }
+}
+
+/*#__PURE__*/ setErrorMessage(
+  RoutePatternMismatchError,
+  ({ route, target }) => `対象パス "${target}" がパターン "${route}" と一致しません`,
+  "ja",
+);

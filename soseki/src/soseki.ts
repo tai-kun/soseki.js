@@ -30,15 +30,15 @@ export {
   NavigationApiNotSupportedError,
 } from "./core/errors.js";
 
-export type * from "./core/match-route-path.js";
-export { default as matchRoutePath } from "./core/match-route-path.js";
-
 export type * from "./core/readonly-form-data.types.js";
 
 export type * from "./core/readonly-url.types.js";
 
 export type * from "./core/redirect-response.js";
 export { default as RedirectResponse } from "./core/redirect-response.js";
+
+export type * from "./core/route-pattern-utils.js";
+export { default as RoutePatternUtils } from "./core/route-pattern-utils.js";
 
 export type * from "./core/route-request.js";
 export { default as RouteRequest } from "./core/route-request.js";

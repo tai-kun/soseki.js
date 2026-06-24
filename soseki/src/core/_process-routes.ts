@@ -1,7 +1,5 @@
-import { parse } from "regexparam";
-
 import compareRoutePaths from "./_compare-route-paths.js";
-import RoutePath from "./route-path.js";
+import RoutePatternUtils from "./route-pattern-utils.js";
 import type { Route, RouteDefinition } from "./route.types.js";
 
 /**
@@ -19,18 +17,17 @@ export default function processRoutes(routes: readonly RouteDefinition[]): reado
   return (
     routes
       .map((route) => {
-        const path = RoutePath.encode(route.path);
         const index = route.index === true;
-        const { keys: paramKeys, pattern: pathPattern } = parse(
-          path,
-          // インデックスルートでないとき loose オプションを `true` にして子ルートに対してもマッチするようにします。
+        const utils = new RoutePatternUtils(route.path, {
+          // インデックスルートでないとき allowChild オプションを `true` にして子ルートに対してもマッチするようにします。
           // これにより、前方一致による階層的なマッチングが有効になります。
-          !index,
-        );
+          allowChild: !index,
+        });
 
         return {
-          path,
+          path: utils.route,
           index,
+          utils,
           action: route.action,
           loader: route.loader,
           // オブジェクト形式またはモジュール形式の双方を安全に評価し、描画対象となる React コンポーネントを確定します。
@@ -42,8 +39,6 @@ export default function processRoutes(routes: readonly RouteDefinition[]): reado
                   typeof route.default === "function"
                 ? route.default
                 : undefined,
-          paramKeys,
-          pathPattern,
           shouldReload: route.shouldReload || ((args) => args.defaultShouldReload),
         };
       })

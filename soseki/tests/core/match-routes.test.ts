@@ -1,17 +1,13 @@
 import { describe, test } from "vitest";
 
 import matchRoutes from "../../src/core/match-routes.js";
+import RoutePatternUtils from "../../src/core/route-pattern-utils.js";
 
 describe("正常系の振る舞い", () => {
   test("単一のルートに完全一致したとき、要素数 1 のタプル配列になる", ({ expect }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/about",
-        pathPattern: /^\/about$/,
-        paramKeys: [],
-      },
-    ];
+    const utils = new RoutePatternUtils("/about");
+    const routes: any = [{ utils }];
     const url = new URL("x://y" + "/about");
 
     // 実行
@@ -20,9 +16,7 @@ describe("正常系の振る舞い", () => {
     // 検証
     expect(result).toStrictEqual([
       {
-        path: "/about",
-        pathPattern: /^\/about$/,
-        paramKeys: [],
+        utils,
         params: {},
         urlPath: "/about",
       },
@@ -33,18 +27,9 @@ describe("正常系の振る舞い", () => {
     expect,
   }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/users",
-        pathPattern: /^\/users/,
-        paramKeys: [],
-      },
-      {
-        path: "/users/:id",
-        pathPattern: /^\/users\/([^/]+)/,
-        paramKeys: ["id"],
-      },
-    ];
+    const usersUtils = new RoutePatternUtils("/users", { allowChild: true });
+    const usersIdUtils = new RoutePatternUtils("/users/:id");
+    const routes: any = [{ utils: usersUtils }, { utils: usersIdUtils }];
     const url = new URL("x://y" + "/users/42");
 
     // 実行
@@ -53,16 +38,12 @@ describe("正常系の振る舞い", () => {
     // 検証
     expect(result).toStrictEqual([
       {
-        path: "/users",
-        pathPattern: /^\/users/,
-        paramKeys: [],
+        utils: usersUtils,
         params: {},
         urlPath: "/users",
       },
       {
-        path: "/users/:id",
-        pathPattern: /^\/users\/([^/]+)/,
-        paramKeys: ["id"],
+        utils: usersIdUtils,
         params: { id: "42" },
         urlPath: "/users/42",
       },
@@ -73,13 +54,8 @@ describe("正常系の振る舞い", () => {
     expect,
   }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/blogs/:posts/comments/:commentId",
-        pathPattern: /^\/blogs\/([^/]+)\/comments\/([^/]+)$/,
-        paramKeys: ["posts", "commentId"],
-      },
-    ];
+    const utils = new RoutePatternUtils("/blogs/:posts/comments/:commentId");
+    const routes: any = [{ utils }];
     const url = new URL("x://y" + "/blogs/tech/comments/123");
 
     // 実行
@@ -88,9 +64,7 @@ describe("正常系の振る舞い", () => {
     // 検証
     expect(result).toStrictEqual([
       {
-        path: "/blogs/:posts/comments/:commentId",
-        pathPattern: /^\/blogs\/([^/]+)\/comments\/([^/]+)$/,
-        paramKeys: ["posts", "commentId"],
+        utils,
         params: { posts: "tech", commentId: "123" },
         urlPath: "/blogs/tech/comments/123",
       },
@@ -101,13 +75,8 @@ describe("正常系の振る舞い", () => {
 describe("異常系および特殊ケースの振る舞い", () => {
   test("登録されているどのルートにもマッチしない URL を指定したとき、null になる", ({ expect }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/home",
-        pathPattern: /^\/home$/,
-        paramKeys: [],
-      },
-    ];
+    const utils = new RoutePatternUtils("/home");
+    const routes: any = [{ utils }];
     const url = new URL("x://y" + "/unknown");
 
     // 実行
@@ -133,13 +102,8 @@ describe("異常系および特殊ケースの振る舞い", () => {
     expect,
   }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/archive/:year?",
-        pathPattern: /^\/archive(?:\/([^/]+))?$/,
-        paramKeys: ["year"],
-      },
-    ];
+    const utils = new RoutePatternUtils("/archive/:year?");
+    const routes: any = [{ utils }];
     const url = new URL("x://y" + "/archive");
 
     // 実行
@@ -148,30 +112,29 @@ describe("異常系および特殊ケースの振る舞い", () => {
     // 検証
     expect(result).toStrictEqual([
       {
-        path: "/archive/:year?",
-        pathPattern: /^\/archive(?:\/([^/]+))?$/,
-        paramKeys: ["year"],
+        utils,
         params: {},
         urlPath: "/archive",
       },
     ]);
   });
 
-  test("末尾スラッシュの有無により不一致となる URL を指定したとき、null になる", ({ expect }) => {
+  test("末尾スラッシュの有無を考慮しない", ({ expect }) => {
     // 準備
-    const routes: any = [
-      {
-        path: "/settings",
-        pathPattern: /^\/settings$/,
-        paramKeys: [],
-      },
-    ];
+    const utils = new RoutePatternUtils("/settings");
+    const routes: any = [{ utils }];
     const url = new URL("x://y" + "/settings/");
 
     // 実行
     const result = matchRoutes(routes, url);
 
     // 検証
-    expect(result).toBe(null);
+    expect(result).toStrictEqual([
+      {
+        utils,
+        params: {},
+        urlPath: "/settings",
+      },
+    ]);
   });
 });

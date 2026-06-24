@@ -6,7 +6,7 @@ import type { MatchedRoute } from "./match-routes.js";
 import type { ReadonlyFormData } from "./readonly-form-data.types.js";
 import RedirectResponse from "./redirect-response.js";
 import RouteRequest from "./route-request.js";
-import type { ActionFunction, RoutePathParams } from "./route.types.js";
+import type { ActionFunction, RouteParams } from "./route.types.js";
 
 /**
  * アクション処理の実行開始時に必要となる、起点リクエスト情報の型定義です。
@@ -64,7 +64,7 @@ export default function startAction(
   request: ActionStartRequest,
 ): StartedAction | null {
   let action: ActionFunction | undefined;
-  let params: RoutePathParams;
+  let params: RouteParams;
   let urlPath: string;
 
   for ({ action, params, urlPath } of routes) {
