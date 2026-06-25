@@ -111,7 +111,8 @@ export default class NavigationApiEngine implements IEngine {
         !event.isTrusted ||
         !event.canIntercept ||
         event.hashChange ||
-        event.downloadRequest !== null
+        event.downloadRequest !== null ||
+        event.navigationType === "reload"
       ) {
         return;
       }
