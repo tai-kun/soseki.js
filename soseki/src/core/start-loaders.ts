@@ -135,8 +135,11 @@ export default function startLoaders(
           prevParams,
           currentParams,
           triggerMethod: "GET",
-          // 遷移前のルート群に今回精査しているパスが含まれていなければ、新規表示扱いとして、既定値を true とします。
-          defaultShouldReload: !prevRoutePathSet.has(currentRoute.path),
+          defaultShouldReload:
+            // 検索クエリーに変更があれば既定値を true とします。
+            prevEntry.url.search !== currentEntry.url.search ||
+            // 遷移前のルート群に今回精査しているパスが含まれていなければ、新規表示扱いとして、既定値を true とします。
+            !prevRoutePathSet.has(currentRoute.path),
         });
       } else {
         // フォームデータの送信を伴う更新契機の場合の判定引数です。
