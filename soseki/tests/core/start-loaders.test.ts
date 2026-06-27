@@ -21,9 +21,11 @@ describe("ローダー未定義および未知のルートに対する振る舞�
       ],
       prevEntry: {
         id: "entry-0",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -54,9 +56,11 @@ describe("ローダー未定義および未知のルートに対する振る舞�
       prevRoutes: [],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -99,9 +103,11 @@ describe("GET 遷移時の再読み込み制御", () => {
       currentRoutes: [route],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -143,9 +149,11 @@ describe("GET 遷移時の再読み込み制御", () => {
       currentRoutes: [route],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -160,6 +168,52 @@ describe("GET 遷移時の再読み込み制御", () => {
 
     const storedPromise = dataStore.get("entry-2")?.get(mockLoader);
     expect(storedPromise).toBe(cachedPromise);
+  });
+
+  test("entry.url.search に変更があれば既定値が true になる", ({ expect, signal }) => {
+    // 準備
+    const mockLoader = vi.fn<LoaderFunction>().mockReturnValue(Promise.resolve("new-data"));
+    const cachedPromise = NinjaPromise.resolve("old-data");
+
+    const dataMap = new Map();
+    dataMap.set(mockLoader, cachedPromise);
+
+    const dataStore = new Map();
+    dataStore.set("entry-1", dataMap); // 過去の実行履歴を作ることで、shoulReload を呼び出す
+
+    const mockShouldReload = vi
+      .fn<ShouldReloadFunction>()
+      .mockImplementation((args) => args.defaultShouldReload);
+    const route = {
+      path: "/get-reload",
+      loader: mockLoader,
+      shouldReload: mockShouldReload,
+    };
+    const args: any = {
+      prevRoutes: [route],
+      currentRoutes: [route],
+      prevEntry: {
+        id: "entry-1",
+        url: { search: "?a=0" },
+      },
+      currentEntry: {
+        id: "entry-2",
+        url: { search: "?a=1" },
+      },
+      loaderDataStore: dataStore,
+      signal,
+    };
+
+    // 実行
+    startLoaders(args);
+
+    // 検証
+    expect(mockLoader).toHaveBeenCalledTimes(1);
+    expect(mockShouldReload).toHaveBeenCalledTimes(1);
+    expect(mockShouldReload.mock.calls[0]?.[0].defaultShouldReload).toBe(true);
+
+    const storedPromise = dataStore.get("entry-2")?.get(mockLoader);
+    expect(storedPromise).not.toBe(cachedPromise);
   });
 });
 
@@ -186,9 +240,11 @@ describe("POST 遷移およびアクション後の再読み込み制御", () =>
       currentRoutes: [route],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -240,10 +296,11 @@ describe("shouldReload の異常系・エッジケースの振る舞い", () => 
       ],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
-        url: "https://example.com",
+        url: new URL("https://example.com"),
       },
       loaderDataStore: dataStore,
       signal,
@@ -288,9 +345,11 @@ describe("shouldReload の異常系・エッジケースの振る舞い", () => 
       ],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -328,10 +387,11 @@ describe("shouldReload の異常系・エッジケースの振る舞い", () => 
       currentRoutes: [route],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
-        url: "https://example.com",
+        url: new URL("https://example.com"),
       },
       loaderDataStore: dataStore,
       signal,
@@ -362,8 +422,14 @@ describe("idle メソッドとデータストアへのマージ処理", () => {
     const args: any = {
       prevRoutes: [],
       currentRoutes,
-      prevEntry: { id: "entry-1" },
-      currentEntry: { id: "entry-2" },
+      prevEntry: {
+        id: "entry-1",
+        url: { search: "" },
+      },
+      currentEntry: {
+        id: "entry-2",
+        url: { search: "" },
+      },
       loaderDataStore: new Map(),
       signal,
     };
@@ -402,9 +468,11 @@ describe("idle メソッドとデータストアへのマージ処理", () => {
       ],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2", // 同じ ID に対して実行する。
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -427,8 +495,14 @@ describe("境界値およびエッジケースの振る舞い", () => {
     const args: any = {
       prevRoutes: [{ path: "/old", loader: vi.fn<LoaderFunction>() }],
       currentRoutes: [],
-      prevEntry: { id: "entry-1" },
-      currentEntry: { id: "entry-2" },
+      prevEntry: {
+        id: "entry-1",
+        url: { search: "" },
+      },
+      currentEntry: {
+        id: "entry-2",
+        url: { search: "" },
+      },
       loaderDataStore: dataStore,
       signal,
     };
@@ -452,9 +526,11 @@ describe("境界値およびエッジケースの振る舞い", () => {
       currentRoutes: [{ path: "/route", loader: mockLoader }],
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -490,9 +566,11 @@ describe("境界値およびエッジケースの振る舞い", () => {
       currentRoutes,
       prevEntry: {
         id: "entry-1",
+        url: { search: "" },
       },
       currentEntry: {
         id: "entry-2",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
@@ -535,9 +613,11 @@ describe("境界値およびエッジケースの振る舞い", () => {
       currentRoutes: [route],
       prevEntry: {
         id: "same-entry-id",
+        url: { search: "" },
       },
       currentEntry: {
         id: "same-entry-id",
+        url: { search: "" },
       },
       loaderDataStore: dataStore,
       signal,
