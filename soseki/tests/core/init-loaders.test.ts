@@ -1,8 +1,9 @@
 import * as v from "valibot";
-import { test } from "vitest";
+import { describe, test, vi } from "vitest";
 
 import HistoryEntryUrlSchema from "../../src/core/history-entry-url-schema.js";
 import initLoaders from "../../src/core/init-loaders.js";
+import RedirectResponse from "../../src/core/redirect-response.js";
 import type RouteRequest from "../../src/core/route-request.js";
 
 const url = (s: string) => v.parse(HistoryEntryUrlSchema(), s);
@@ -195,7 +196,7 @@ test("loader が関数ではない要素が含まれるとき、その要素は�
       loader: validLoader,
       params: {},
     },
-  ] as any[];
+  ];
   const request = {
     url: url("http://localhost/"),
     signal,
@@ -270,4 +271,103 @@ test("params が空のオブジェクトのとき、ローダー関数に空の 
 
   // 検証
   expect(passedParams).toStrictEqual({});
+});
+
+describe("initLoaders のエッジケース", () => {
+  test("rejected Promise を返す loader は rejected として格納される", async ({
+    expect,
+    signal,
+  }) => {
+    // 準備
+    const error = new Error("fail");
+    const loader = vi.fn<() => Promise<never>>(() => Promise.reject(error));
+    const routes: any[] = [{ loader, params: {} }];
+    const testUrl = url("https://example.com/");
+
+    // 実行
+    const map = initLoaders(routes, { url: testUrl, signal });
+
+    // 検証
+    const promise = map.get(loader)!;
+    await expect(promise).rejects.toThrow(error);
+  });
+
+  test("RedirectResponse を返す loader はそのまま格納される", async ({ expect, signal }) => {
+    // 準備
+    const response = new RedirectResponse("/redirect");
+    const loader = vi.fn<() => any>(() => response);
+    const routes: any[] = [{ loader, params: {} }];
+    const testUrl = url("https://example.com/");
+
+    // 実行
+    const map = initLoaders(routes, { url: testUrl, signal });
+
+    // 検証
+    const promise = map.get(loader)!;
+    await expect(promise).resolves.toBe(response);
+  });
+
+  test("一部の loader が throw しても他に影響しない", async ({ expect, signal }) => {
+    // 準備
+    // oxlint-disable-next-line vitest/require-mock-type-parameters
+    const okLoader = vi.fn(() => "ok");
+    // oxlint-disable-next-line vitest/require-mock-type-parameters
+    const errLoader = vi.fn(() => {
+      throw new Error("boom");
+    });
+    const routes: any[] = [
+      { loader: okLoader, params: {} },
+      { loader: errLoader, params: {} },
+    ];
+    const testUrl = url("https://example.com/");
+
+    // 実行
+    const map = initLoaders(routes, { url: testUrl, signal });
+
+    // 検証
+    await expect(map.get(okLoader)!).resolves.toBe("ok");
+    await expect(map.get(errLoader)!).rejects.toThrow("boom");
+  });
+
+  test("request オブジェクトは全 loader で共有される", ({ expect, signal }) => {
+    // 準備
+    const captured: any[] = [];
+    // oxlint-disable-next-line vitest/require-mock-type-parameters
+    const loader1 = vi.fn((args: any) => {
+      captured.push(args.request);
+      return "1";
+    });
+    // oxlint-disable-next-line vitest/require-mock-type-parameters
+    const loader2 = vi.fn((args: any) => {
+      captured.push(args.request);
+      return "2";
+    });
+    const routes: any[] = [
+      { loader: loader1, params: {} },
+      { loader: loader2, params: {} },
+    ];
+    const testUrl = url("https://example.com/");
+
+    // 実行
+    initLoaders(routes, { url: testUrl, signal });
+
+    // 検証
+    expect(captured[0]).toBe(captured[1]);
+  });
+
+  test("abort 済みの signal でも loader は呼び出される", ({ expect }) => {
+    // 準備
+    const controller = new AbortController();
+    controller.abort();
+    // oxlint-disable-next-line vitest/require-mock-type-parameters
+    const loader = vi.fn(() => "data");
+    const routes: any[] = [{ loader, params: {} }];
+    const testUrl = url("https://example.com/");
+
+    // 実行
+    const map = initLoaders(routes, { url: testUrl, signal: controller.signal });
+
+    // 検証
+    expect(map.has(loader)).toBe(true);
+  });
 });

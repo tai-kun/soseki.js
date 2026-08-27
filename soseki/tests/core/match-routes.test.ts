@@ -1,5 +1,6 @@
 import { describe, test } from "vitest";
 
+import processRoutes from "../../src/core/_process-routes.js";
 import matchRoutes from "../../src/core/match-routes.js";
 import RoutePatternUtils from "../../src/core/route-pattern-utils.js";
 
@@ -136,5 +137,94 @@ describe("異常系および特殊ケースの振る舞い", () => {
         urlPath: "/settings",
       },
     ]);
+  });
+});
+
+describe("matchRoutes の拡張的な一致", () => {
+  test("wildcard がフォールバックになる", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/users/:id" }, { path: "/*" }]);
+    const url = new URL("https://example.com/unknown/path");
+
+    // 実行
+    const matched = matchRoutes(routes, url);
+
+    // 検証
+    expect(matched).not.toBeNull();
+    expect(matched!.some((r) => r.path === "/*")).toBe(true);
+  });
+
+  test("static が param より優先される", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/users/:id" }, { path: "/users/me" }]);
+    const url = new URL("https://example.com/users/me");
+
+    // 実行
+    const matched = matchRoutes(routes, url);
+
+    // 検証
+    expect(matched![0]!.path).toBe("/users/me");
+  });
+
+  test("階層で親と子が共にマッチする", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/" }, { path: "/users" }, { path: "/users/:id" }]);
+    const url = new URL("https://example.com/users/123");
+
+    // 実行
+    const matched = matchRoutes(routes, url);
+
+    // 検証
+    expect(matched).not.toBeNull();
+    const paths = matched!.map((r) => r.path);
+    expect(paths).toContain("/");
+    expect(paths).toContain("/users");
+    expect(paths).toContain("/users/:id");
+  });
+
+  test("query と hash は一致に影響しない", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/search" }]);
+    const url = new URL("https://example.com/search?query=1#hash");
+
+    // 実行
+    const matched = matchRoutes(routes, url);
+
+    // 検証
+    expect(matched).not.toBeNull();
+    expect(matched![0]!.path).toBe("/search");
+  });
+
+  test("存在しないパスは null を返す", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/exists" }]);
+    const url = new URL("https://example.com/notfound");
+
+    // 実行と検証
+    expect(matchRoutes(routes, url)).toBeNull();
+  });
+
+  test("urlPath と params が正しく解決される", ({ expect }) => {
+    // 準備
+    const routes = processRoutes([{ path: "/users/:id" }]);
+    const url = new URL("https://example.com/users/42");
+
+    // 実行
+    const matched = matchRoutes(routes, url);
+
+    // 検証
+    expect(matched![0]!.urlPath).toBe("/users/42");
+    expect(matched![0]!.params).toStrictEqual({ id: "42" });
+  });
+
+  test("順序が異なっても詳細度順で安定する", ({ expect }) => {
+    // 準備
+    const routesA = processRoutes([{ path: "/*" }, { path: "/a" }, { path: "/a/:id" }]);
+    const routesB = processRoutes([{ path: "/a/:id" }, { path: "/*" }, { path: "/a" }]);
+    const url = new URL("https://example.com/a");
+
+    // 検証
+    expect(matchRoutes(routesA, url)![0]!.path).toBe("/a");
+    expect(matchRoutes(routesB, url)![0]!.path).toBe("/a");
   });
 });

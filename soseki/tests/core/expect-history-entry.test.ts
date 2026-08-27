@@ -105,11 +105,12 @@ describe("スキーマ検証を満たさない不正なオブジェクトが渡�
     // 準備
     const entry = {
       id: "123e4567-e89b-12d3-a456-426614174000",
-      url: 12345 as any, // 不適切な型を想定する。
+      url: 12345, // 不適切な型を想定する。
       index: 0,
     };
 
     // 実行と検証
+    // @ts-expect-error - 不正な型をテストする
     expect(() => expectHistoryEntry(entry)).toThrow(UnexpectedValidationError);
   });
 
@@ -146,7 +147,8 @@ describe("スキーマ検証を満たさない不正なオブジェクトが渡�
     };
 
     // 実行と検証
-    expect(() => expectHistoryEntry(entry as any)).toThrow(UnexpectedValidationError);
+    // @ts-expect-error - 必須プロパティ欠落をテストする
+    expect(() => expectHistoryEntry(entry)).toThrow(UnexpectedValidationError);
   });
 });
 
@@ -179,5 +181,48 @@ describe("スキーマは満たすが業務ロジックの制約を満たさな�
 
     // 検証
     expect(result).toBe(null);
+  });
+});
+
+describe("エッジケース", () => {
+  test("余分なプロパティがあっても検証が通る", ({ expect }) => {
+    // 準備
+    const entry: any = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      url: "https://example.com/",
+      index: 0,
+      extra: "x",
+    };
+
+    // 実行
+    const result = expectHistoryEntry(entry);
+
+    // 検証
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe(entry.id);
+  });
+
+  test("float の index は検証エラーを投げる", ({ expect }) => {
+    // 準備
+    const entry: any = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      url: "https://example.com/",
+      index: 1.5,
+    };
+
+    // 実行と検証
+    expect(() => expectHistoryEntry(entry)).toThrow();
+  });
+
+  test("NaN の index は検証エラーを投げる", ({ expect }) => {
+    // 準備
+    const entry: any = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      url: "https://example.com/",
+      index: Number.NaN,
+    };
+
+    // 実行と検証
+    expect(() => expectHistoryEntry(entry)).toThrow();
   });
 });

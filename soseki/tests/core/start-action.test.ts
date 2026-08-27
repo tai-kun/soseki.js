@@ -1,8 +1,9 @@
 import type { FulfilledNinjaPromise, RejectedNinjaPromise } from "ninja-promise";
 import * as v from "valibot";
-import { test } from "vitest";
+import { describe, test } from "vitest";
 
 import HistoryEntryUrlSchema from "../../src/core/history-entry-url-schema.js";
+import type { HistoryEntryUrl } from "../../src/core/history-entry-url-schema.js";
 import RedirectResponse from "../../src/core/redirect-response.js";
 import startAction from "../../src/core/start-action.js";
 
@@ -21,7 +22,7 @@ test("該当するアクション関数が存在しない場合、 null を返�
       urlPath: "/user",
       params: {},
     },
-  ] as any;
+  ];
 
   // 実行
   const result = startAction(routes, request);
@@ -300,7 +301,7 @@ test("routes はリクエストの URL に適合することが前提", ({ expec
   const result = startAction(routes, request);
 
   // 検証
-  expect(result).not.toBe(null);
+  expect(result).toBeNull();
 });
 
 test("action プロパティーが関数ではない場合はスキップする", ({ expect, signal }) => {
@@ -316,11 +317,51 @@ test("action プロパティーが関数ではない場合はスキップする"
       urlPath: "/",
       params: {},
     },
-  ] as any;
+  ];
 
   // 実行
+  // @ts-expect-error - 不正な型をテストする
   const result = startAction(routes, request);
 
   // 検証
   expect(result).toBe(null);
+});
+
+describe("startAction のセグメント境界", () => {
+  test("部分一致する prefix だけではマッチしない", ({ expect, signal }) => {
+    // 準備
+    const routes: any[] = [
+      { path: "/foo", action: () => "foo", params: {}, urlPath: "/foo" },
+      { path: "/foo-bar", action: () => "foobar", params: {}, urlPath: "/foo-bar" },
+    ];
+    const url = new URL("https://example.com/foo-bar");
+
+    // 実行
+    const result = startAction(routes, {
+      url: url as unknown as HistoryEntryUrl,
+      formData: new FormData(),
+      signal,
+    });
+
+    // 検証
+    expect(result).not.toBeNull();
+    expect(result!.func).toBe(routes[1]!.action);
+  });
+
+  test("セグメント境界を跨ぐ prefix では null を返す", ({ expect, signal }) => {
+    // 準備
+    const action = () => "foo";
+    const routes: any[] = [{ path: "/users", action, params: {}, urlPath: "/users" }];
+    const url = new URL("https://example.com/usersettings");
+
+    // 実行
+    const result = startAction(routes, {
+      url: url as unknown as HistoryEntryUrl,
+      formData: new FormData(),
+      signal,
+    });
+
+    // 検証
+    expect(result).toBeNull();
+  });
 });

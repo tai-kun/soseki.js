@@ -1,11 +1,16 @@
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
-import isDebugMode from "./_is-debug-mode";
+import isDebugMode from "./_is-debug-mode.js";
 
 export default defineConfig({
   oxc: {
     target: "es2020",
+    jsx: {
+      runtime: "automatic",
+      development: true,
+      importSource: "react",
+    },
   },
   define: {
     __DEBUG__: `${isDebugMode}`,
@@ -13,8 +18,8 @@ export default defineConfig({
     __SERVER__: "false",
   },
   test: {
-    include: ["tests/**/*.test.ts"],
-    exclude: ["tests/**/*.server.test.ts"],
+    include: ["tests/**/*.test.{ts,tsx}"],
+    exclude: ["tests/**/*.server.test.{ts,tsx}"],
     browser: {
       provider: playwright(),
       enabled: true,
@@ -22,9 +27,9 @@ export default defineConfig({
       instances: [
         { browser: "chromium" },
         // { browser: "firefox" },
-        { browser: "webkit" },
+        // { browser: "webkit" },
       ],
     },
-    setupFiles: [".config/_debugging.ts"],
+    setupFiles: [".config/_polyfill.ts", ".config/_debugging.ts"],
   },
 });

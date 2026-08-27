@@ -2,6 +2,13 @@ import { NinjaPromise } from "ninja-promise";
 import { describe, test, vi } from "vitest";
 
 import { LoaderConditionError } from "../../src/core/errors.js";
+import type { HistoryEntryId } from "../../src/core/history-entry-id-schema.js";
+import type { HistoryEntryUrl } from "../../src/core/history-entry-url-schema.js";
+
+const url = (s: string) => v.parse(HistoryEntryUrlSchema(), s);
+import * as v from "valibot";
+
+import HistoryEntryUrlSchema from "../../src/core/history-entry-url-schema.js";
 import type { LoaderFunction, ShouldReloadFunction } from "../../src/core/route.types.js";
 import startLoaders from "../../src/core/start-loaders.js";
 
@@ -272,7 +279,7 @@ describe("shouldReload の異常系・エッジケースの振る舞い", () => 
     const mockLoader = vi.fn<LoaderFunction>();
     const mockShouldReload = vi
       .fn<ShouldReloadFunction>()
-      .mockReturnValue(Promise.resolve(true) as any);
+      .mockReturnValue(Promise.resolve(true) as unknown as boolean);
 
     const dataMap = new Map();
     dataMap.set(mockLoader, NinjaPromise.resolve("old-data"));
@@ -369,7 +376,9 @@ describe("shouldReload の異常系・エッジケースの振る舞い", () => 
   }) => {
     // 準備
     const mockLoader = vi.fn<LoaderFunction>();
-    const mockShouldReload = vi.fn<ShouldReloadFunction>().mockReturnValue("invalid-string" as any);
+    const mockShouldReload = vi
+      .fn<ShouldReloadFunction>()
+      .mockReturnValue("invalid-string" as unknown as boolean);
     const route = {
       path: "/invalid-reload",
       loader: mockLoader,
@@ -631,5 +640,48 @@ describe("境界値およびエッジケースの振る舞い", () => {
 
     const mergedDataMap = dataStore.get("same-entry-id")!;
     expect(mergedDataMap.get(mockLoader)).toBe(cachedPromise);
+  });
+});
+
+describe("startLoaders の POST 時の currentUrl", () => {
+  test("currentUrl が currentEntry.url になる", ({ expect, signal }) => {
+    // 準備
+    let captured: any = null;
+    const shouldReload: ShouldReloadFunction = (args) => {
+      captured = args;
+      return true;
+    };
+    const loader = () => "data";
+    const route: any = { path: "/target", loader, shouldReload };
+    const cached = NinjaPromise.resolve("old");
+    const store = new Map();
+    store.set("prev-id", new Map([[loader, cached]]));
+
+    const prevUrl = url("https://example.com/prev");
+    const currentUrl = url("https://example.com/current");
+
+    // 実行
+    startLoaders(
+      {
+        prevRoutes: [route],
+        currentRoutes: [route],
+        prevEntry: {
+          id: "prev-id" as unknown as HistoryEntryId,
+          url: prevUrl as unknown as HistoryEntryUrl,
+        },
+        currentEntry: {
+          id: "curr-id" as unknown as HistoryEntryId,
+          url: currentUrl as unknown as HistoryEntryUrl,
+        },
+        loaderDataStore: store,
+        signal,
+      },
+      { formData: new FormData(), actionData: {} },
+    );
+
+    // 検証
+    expect(captured).not.toBeNull();
+    expect(captured.currentUrl.href).toBe(currentUrl.href);
+    expect(captured.prevUrl.href).toBe(prevUrl.href);
   });
 });

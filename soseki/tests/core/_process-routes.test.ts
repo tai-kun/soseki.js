@@ -1,7 +1,7 @@
 import { describe, test } from "vitest";
 
 import processRoutes from "../../src/core/_process-routes.js";
-import type { RouteDefinition } from "../../src/core/route.types.js";
+import type { RouteDefinition, ShouldReloadFunctionArgs } from "../../src/core/route.types.js";
 
 describe("空の配列が入力された場合", () => {
   test("空の配列を返す", ({ expect }) => {
@@ -102,8 +102,12 @@ describe("shouldReload プロパティーの処理", () => {
     const shouldReloadFunc = result[0]?.shouldReload;
 
     // 検証
-    expect(shouldReloadFunc?.({ defaultShouldReload: true } as any)).toStrictEqual(true);
-    expect(shouldReloadFunc?.({ defaultShouldReload: false } as any)).toStrictEqual(false);
+    expect(
+      shouldReloadFunc?.({ defaultShouldReload: true } as unknown as ShouldReloadFunctionArgs),
+    ).toStrictEqual(true);
+    expect(
+      shouldReloadFunc?.({ defaultShouldReload: false } as unknown as ShouldReloadFunctionArgs),
+    ).toStrictEqual(false);
   });
 
   test("shouldReload がカスタム定義されているとき、ユーザー定義の関数が設定される", ({
@@ -176,5 +180,54 @@ describe("例外系・エラーハンドリング", () => {
 
     // 実行と検証
     expect(() => processRoutes(routes)).toThrow();
+  });
+});
+
+describe("processRoutes のエッジケース", () => {
+  test("重複パスでも件数が保持される", ({ expect }) => {
+    // 実行
+    const routes = processRoutes([{ path: "/a" }, { path: "/a" }]);
+
+    // 検証
+    expect(routes.length).toBe(2);
+    expect(routes[0]!.path).toBe("/a");
+  });
+
+  test("index ルートは子にマッチしない", ({ expect }) => {
+    // 準備と実行
+    const routes = processRoutes([{ path: "/parent", index: true }]);
+
+    // 検証
+    expect(routes[0]!.utils.match("/parent/child")).toBe(false);
+    expect(routes[0]!.utils.match("/parent")).toBe(true);
+  });
+
+  test("非 index ルートは子にマッチする", ({ expect }) => {
+    // 準備と実行
+    const routes = processRoutes([{ path: "/parent" }]);
+
+    // 検証
+    expect(routes[0]!.utils.match("/parent/child")).toBe(true);
+  });
+
+  test("component がなくてもエラーにならない", ({ expect }) => {
+    // 実行
+    const routes = processRoutes([{ path: "/no-comp" }]);
+
+    // 検証
+    expect(routes[0]!.component).toBeUndefined();
+  });
+
+  test("loader と action が引き継がれる", ({ expect }) => {
+    // 準備
+    const loader = () => "data";
+    const action = () => "act";
+
+    // 実行
+    const routes = processRoutes([{ path: "/a", loader, action }]);
+
+    // 検証
+    expect(routes[0]!.loader).toBe(loader);
+    expect(routes[0]!.action).toBe(action);
   });
 });

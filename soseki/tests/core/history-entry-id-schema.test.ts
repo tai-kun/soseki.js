@@ -51,3 +51,17 @@ describe("正常系", () => {
     expect(result).toBe(uppercaseUuid);
   });
 });
+
+describe("エッジケース", () => {
+  test("不正な UUID は検証エラーを投げる", ({ expect }) => {
+    // 検証
+    expect(() => v.parse(HistoryEntryIdSchema(), "not-uuid")).toThrow();
+    expect(() => v.parse(HistoryEntryIdSchema(), "")).toThrow();
+    expect(() => v.parse(HistoryEntryIdSchema(), 123 as unknown as string)).toThrow();
+  });
+
+  test("桁不足の UUID は検証エラーを投げる", ({ expect }) => {
+    // 検証
+    expect(() => v.parse(HistoryEntryIdSchema(), "550e8400-e29b-41d4-a716-44665544000")).toThrow();
+  });
+});

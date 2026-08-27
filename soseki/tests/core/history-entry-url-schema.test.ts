@@ -39,3 +39,24 @@ describe("正常系", () => {
     expect(result.href).toBe("https://example.com/page?a=1&b=2&c=3");
   });
 });
+
+describe("エッジケース", () => {
+  test("不正な URL は検証エラーを投げる", ({ expect }) => {
+    // 検証
+    expect(() => v.parse(HistoryEntryUrlSchema(), "not a url")).toThrow();
+    expect(() => v.parse(HistoryEntryUrlSchema(), "")).toThrow();
+  });
+
+  test("相対 URL は検証エラーを投げる", ({ expect }) => {
+    // 検証
+    expect(() => v.parse(HistoryEntryUrlSchema(), "/relative")).toThrow();
+  });
+
+  test("query がソートされて正規化される", ({ expect }) => {
+    // 実行
+    const url = v.parse(HistoryEntryUrlSchema(), "https://example.com/a?z=1&a=2#h");
+
+    // 検証
+    expect(url.search).toBe("?a=2&z=1");
+  });
+});

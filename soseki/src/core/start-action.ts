@@ -63,22 +63,27 @@ export default function startAction(
   routes: readonly Pick<MatchedRoute, "params" | "action" | "urlPath">[],
   request: ActionStartRequest,
 ): StartedAction | null {
-  let action: ActionFunction | undefined;
+  let action: ActionFunction;
   let params: RouteParams;
-  let urlPath: string;
+  let matched = false;
 
-  for ({ action, params, urlPath } of routes) {
+  for (const route of routes) {
     if (
       // アクションを実行するために、関数が定義されている必要があります。
-      typeof action === "function" &&
+      typeof route.action === "function" &&
       // アクションの送信先に近い親ルートを選出します。
-      request.url.pathname.startsWith(urlPath)
+      (request.url.pathname === route.urlPath ||
+        (route.urlPath !== "/" && request.url.pathname.startsWith(route.urlPath + "/")) ||
+        (route.urlPath === "/" && request.url.pathname.startsWith("/")))
     ) {
+      action = route.action;
+      params = route.params;
+      matched = true;
       break;
     }
   }
 
-  if (typeof action !== "function") {
+  if (!matched) {
     return null;
   }
 
@@ -149,7 +154,7 @@ export default function startAction(
 
   return {
     data: actionData,
-    func: action,
+    func: action!,
     async idle() {
       try {
         // アクションデータのエラーハンドリングはコンポーネント側に一任されます。

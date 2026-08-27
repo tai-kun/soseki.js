@@ -1,6 +1,7 @@
 import { describe, test, expectTypeOf } from "vitest";
 
 import RedirectResponse from "../../src/core/redirect-response.js";
+import redirect from "../../src/utils/redirect.js";
 
 describe("正常なパス文字列を解析する場合", () => {
   test("完全なパスを渡したとき、パス名とクエリーとハッシュに分解される", ({ expect }) => {
@@ -132,5 +133,60 @@ describe("型安全と不変性が保証されているか確認する場合", (
 
     // 実行と検証
     expectTypeOf(plainObject).not.toEqualTypeOf<RedirectResponse>();
+  });
+});
+
+describe("RedirectResponse のエッジケース", () => {
+  test("redirect ユーティリティは RedirectResponse を返す", ({ expect }) => {
+    // 実行
+    const response = redirect("/target");
+
+    // 検証
+    expect(response).toBeInstanceOf(RedirectResponse);
+    expect(response.pathname).toBe("/target");
+  });
+
+  test("query はソートされて保持される", ({ expect }) => {
+    // 準備と実行
+    const response = new RedirectResponse("/a?z=1&a=2");
+
+    // 検証
+    expect(response.search).toBe("?a=2&z=1");
+  });
+
+  test("pathname と search と hash が分解される", ({ expect }) => {
+    // 準備と実行
+    const response = new RedirectResponse("/path?x=1#sec");
+
+    // 検証
+    expect(response.pathname).toBe("/path");
+    expect(response.search).toBe("?x=1");
+    expect(response.hash).toBe("#sec");
+  });
+
+  test("相対パス風の入力も正規化される", ({ expect }) => {
+    // 準備と実行
+    const response = new RedirectResponse("relative/path");
+
+    // 検証
+    expect(response.pathname).toBe("/relative/path");
+  });
+
+  test("絶対 URL はパスとして取り込まれる", ({ expect }) => {
+    // 準備と実行
+    const response = new RedirectResponse("https://example.com/a");
+
+    // 検証
+    expect(response.pathname).toBe("/https:/example.com/a");
+  });
+
+  test("plain object と区別できる", ({ expect }) => {
+    // 準備
+    const response = new RedirectResponse("/a");
+    const plain = { pathname: "/a", search: "", hash: "" };
+
+    // 検証
+    expect(plain instanceof RedirectResponse).toBe(false);
+    expect(response instanceof RedirectResponse).toBe(true);
   });
 });

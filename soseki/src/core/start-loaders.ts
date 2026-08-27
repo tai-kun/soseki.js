@@ -146,7 +146,7 @@ export default function startLoaders(
         return shouldReload({
           ...actionContext,
           prevUrl: prevEntry.url,
-          currentUrl: prevEntry.url,
+          currentUrl: currentEntry.url,
           prevParams,
           currentParams,
           triggerMethod: "POST",

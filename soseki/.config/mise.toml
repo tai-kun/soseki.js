@@ -6,6 +6,7 @@ run = [
   { task = "test:lint" },
   { task = "test:typecheck" },
 ]
+env = { CI = 1 }
 
 [tasks."test:server"]
 run = "npx vitest --config ./.config/vitest.server.ts"
@@ -14,10 +15,20 @@ run = "npx vitest --config ./.config/vitest.server.ts"
 run = "npx vitest --config ./.config/vitest.client.ts"
 
 [tasks."test:format"]
-run = "npx oxfmt --config ./.config/.oxfmtrc.json --check"
+run = '''
+set -e
+cp ./.config/.oxfmtrc.json ./.tmp-oxfmtrc.json
+trap 'rm -f ./.tmp-oxfmtrc.json' EXIT
+npx oxfmt --config ./.tmp-oxfmtrc.json --check
+'''
 
 [tasks."test:lint"]
-run = "npx oxlint --config ./.config/.oxlintrc.json"
+run = '''
+set -e
+cp ./.config/.oxlintrc.json ./.tmp-oxlintrc.json
+trap 'rm -f ./.tmp-oxlintrc.json' EXIT
+npx oxlint --config ./.tmp-oxlintrc.json
+'''
 
 [tasks."test:typecheck"]
 run = [
@@ -28,15 +39,25 @@ run = [
   "npx tsc --noEmit --project ./.config/tsconfig.config.json",
 ]
 
-[tasks.fmt]
-run = "npx oxfmt --config ./.config/.oxfmtrc.json"
+[tasks.format]
+run = '''
+set -e
+cp ./.config/.oxfmtrc.json ./.tmp-oxfmtrc.json
+trap 'rm -f ./.tmp-oxfmtrc.json' EXIT
+npx oxfmt --config ./.tmp-oxfmtrc.json
+'''
 
 [tasks.lint]
-run = "npx oxlint --config ./.config/.oxlintrc.json"
+run = '''
+set -e
+cp ./.config/.oxlintrc.json ./.tmp-oxlintrc.json
+trap 'rm -f ./.tmp-oxlintrc.json' EXIT
+npx oxlint --config ./.tmp-oxlintrc.json
+'''
 
 [tasks.update]
 run = [
   "npx npm-check-updates --target minor -u --cooldown 7",
   "pnpm install",
-  "pnpm dlx playwright install --with-deps",
+  "npx playwright install --with-deps",
 ]

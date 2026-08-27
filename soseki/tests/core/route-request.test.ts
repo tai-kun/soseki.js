@@ -235,3 +235,67 @@ describe("境界値および特殊ケース", () => {
     }).toThrowError(TypeError);
   });
 });
+
+describe("RouteRequest のエッジケース", () => {
+  test("GET の formData は null", ({ expect, signal }) => {
+    // 準備
+    const url = new URL("https://example.com/");
+
+    // 実行
+    const request = RouteRequest.new("GET", url, signal);
+
+    // 検証
+    expect(request.formData).toBeNull();
+    expect(request.method).toBe("GET");
+  });
+
+  test("POST の method と formData が保持される", ({ expect, signal }) => {
+    // 準備
+    const url = new URL("https://example.com/");
+    const formData = new FormData();
+    formData.set("x", "1");
+
+    // 実行
+    const request = RouteRequest.new("POST", url, signal, formData);
+
+    // 検証
+    expect(request.method).toBe("POST");
+    expect(request.formData).toBe(formData);
+  });
+
+  test("toRequest で headers を上書きできる", ({ expect, signal }) => {
+    // 準備
+    const url = new URL("https://example.com/");
+    const request = RouteRequest.new("GET", url, signal);
+
+    // 実行
+    const httpRequest = request.toRequest({ headers: { "x-test": "1" } });
+
+    // 検証
+    expect(httpRequest.headers.get("x-test")).toBe("1");
+  });
+
+  test("toRequest で abort が伝播する", ({ expect }) => {
+    // 準備
+    const url = new URL("https://example.com/");
+    const controller = new AbortController();
+    const request = RouteRequest.new("GET", url, controller.signal);
+
+    // 実行
+    const httpRequest = request.toRequest();
+
+    // 検証
+    expect(httpRequest.signal.aborted).toBe(false);
+    controller.abort();
+    expect(controller.signal.aborted).toBe(true);
+  });
+
+  test("GET に body として FormData を渡すとエラーになる", ({ expect, signal }) => {
+    // 準備
+    const url = new URL("https://example.com/");
+    const request = RouteRequest.new("GET", url, signal);
+
+    // 実行と検証
+    expect(() => request.toRequest({ body: new FormData() })).toThrow(TypeError);
+  });
+});

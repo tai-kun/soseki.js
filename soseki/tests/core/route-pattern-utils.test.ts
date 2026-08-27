@@ -279,3 +279,116 @@ describe("静的メソッド", () => {
     expect(result).toBe("/users/123/posts/789");
   });
 });
+
+describe("RoutePatternUtils の拡張的な一致", () => {
+  test("wildcard は子パス全体にマッチする", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/files/*");
+
+    // 実行と検証
+    expect(utils.match("/files/a/b/c")).toBe(true);
+    expect(utils.parseSafe("/files/a/b/c")).toStrictEqual({ "*": "a/b/c" });
+    expect(utils.match("/files")).toBe(false);
+  });
+
+  test("optional wildcard は空にもマッチする", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/files/*?");
+
+    // 検証
+    expect(utils.match("/files")).toBe(true);
+    expect(utils.match("/files/a")).toBe(true);
+  });
+
+  test("optional param は省略できる", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:id?");
+
+    // 検証
+    expect(utils.match("/users")).toBe(true);
+    expect(utils.match("/users/123")).toBe(true);
+    expect(utils.parseSafe("/users")).toStrictEqual({});
+    expect(utils.parseSafe("/users/123")).toStrictEqual({ id: "123" });
+  });
+
+  test("suffix 付き param は拡張子で区切られる", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/movies/:title.mp4");
+
+    // 検証
+    expect(utils.match("/movies/foo.mp4")).toBe(true);
+    expect(utils.match("/movies/foo.mov")).toBe(false);
+    expect(utils.parseSafe("/movies/foo.mp4")).toStrictEqual({ title: "foo" });
+  });
+
+  test("inject で params を埋め込める", ({ expect }) => {
+    // 準備
+    const userUtils = new RoutePatternUtils("/users/:id");
+    const fileUtils = new RoutePatternUtils("/files/*");
+
+    // 検証
+    expect(userUtils.inject({ id: "42" })).toBe("/users/42");
+    expect(fileUtils.inject({ "*": "a/b" })).toBe("/files/a/b");
+  });
+
+  test("allowChild が true のとき親が子にマッチする", ({ expect }) => {
+    // 準備
+    const withChild = new RoutePatternUtils("/users", { allowChild: true });
+    const withoutChild = new RoutePatternUtils("/users", { allowChild: false });
+
+    // 検証
+    expect(withChild.match("/users/123")).toBe(true);
+    expect(withoutChild.match("/users/123")).toBe(false);
+  });
+
+  test("エンコードされた param はデコードされない", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:id");
+
+    // 検証
+    expect(utils.parseSafe("/users/%20hello")).toStrictEqual({ id: "%20hello" });
+  });
+
+  test("末尾スラッシュは正規化される", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:id");
+
+    // 検証
+    expect(utils.match("/users/123/")).toBe(true);
+    expect(utils.match("/users/123")).toBe(true);
+  });
+
+  test("replace で一部 param を置換できる", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:id/posts/:postId");
+
+    // 検証
+    expect(utils.replace("/users/1/posts/2", { postId: "99" })).toBe("/users/1/posts/99");
+    expect(utils.replaceSafe("/invalid", { postId: "1" })).toBeNull();
+  });
+
+  test("一致しない parse はエラーを投げる", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:id");
+
+    // 実行と検証
+    expect(() => utils.parse("/other/123")).toThrow();
+  });
+
+  test("静的ヘルパーはインスタンスと同等", ({ expect }) => {
+    // 検証
+    expect(RoutePatternUtils.match("/a/:id", "/a/1")).toBe(true);
+    expect(RoutePatternUtils.parse("/a/:id", "/a/1")).toStrictEqual({ id: "1" });
+    expect(RoutePatternUtils.inject("/a/:id", { id: "1" })).toBe("/a/1");
+    expect(RoutePatternUtils.parseSafe("/a/:id", "/no")).toBeNull();
+  });
+
+  test("Unicode を含む param はエンコードされる", ({ expect }) => {
+    // 準備
+    const utils = new RoutePatternUtils("/users/:name");
+
+    // 検証
+    expect(utils.parseSafe("/users/日本語")).toStrictEqual({ name: "%E6%97%A5%E6%9C%AC%E8%AA%9E" });
+    expect(utils.inject({ name: "日本語" })).toBe("/users/日本語");
+  });
+});

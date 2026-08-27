@@ -275,3 +275,98 @@ describe("境界値および特殊ケース", () => {
     expect(routePath.toString()).toBe("/http:/google.com/path");
   });
 });
+
+describe("RoutePath のエッジケース", () => {
+  test("エンコードされたスラッシュは保持される", ({ expect }) => {
+    // 準備と実行
+    const path = new RoutePath("/a%2Fb/c");
+
+    // 検証
+    expect(path.pathname).toBe("/a%2Fb/c");
+  });
+
+  test("clone は独立したコピーを返す", ({ expect }) => {
+    // 準備
+    const path = new RoutePath("/a?b=1#h");
+
+    // 実行
+    const cloned = path.clone();
+
+    // 検証
+    expect(cloned.toString()).toBe(path.toString());
+    cloned.pathname = "/b";
+    expect(path.pathname).toBe("/a");
+    expect(cloned.pathname).toBe("/b");
+  });
+
+  test("search に ? なしの値を渡すと ? が付与される", ({ expect }) => {
+    // 準備
+    const path = new RoutePath("/a");
+
+    // 実行
+    path.search = "x=1";
+
+    // 検証
+    expect(path.search).toBe("?x=1");
+  });
+
+  test("空の hash は除去される", ({ expect }) => {
+    // 準備
+    const path = new RoutePath("/a#hash");
+
+    // 実行
+    path.hash = "";
+
+    // 検証
+    expect(path.hash).toBe("");
+    expect(path.toString()).toBe("/a");
+  });
+
+  test("searchParams 追加後に search が反映される", ({ expect }) => {
+    // 準備
+    const path = new RoutePath("/a?z=1&a=2");
+
+    // 検証
+    expect(path.search).toBe("?a=2&z=1");
+    path.searchParams.append("m", "3");
+    expect(path.search).toBe("?a=2&m=3&z=1");
+  });
+
+  test("pathname への代入でスラッシュが正規化される", ({ expect }) => {
+    // 準備
+    const path = new RoutePath("/a");
+
+    // 実行
+    path.pathname = "//b///c//";
+
+    // 検証
+    expect(path.pathname).toBe("/b/c");
+  });
+
+  test("非常に長いパスでも末尾が保持される", ({ expect }) => {
+    // 準備
+    const long = "/" + "a/".repeat(500) + "end";
+
+    // 実行
+    const path = new RoutePath(long);
+
+    // 検証
+    expect(path.pathname.endsWith("/end")).toBe(true);
+  });
+
+  test("Unicode を含むパスはエンコードされる", ({ expect }) => {
+    // 準備と実行
+    const path = new RoutePath("/日本語/パス");
+
+    // 検証
+    expect(path.pathname).toBe("/%E6%97%A5%E6%9C%AC%E8%AA%9E/%E3%83%91%E3%82%B9");
+  });
+
+  test("空の pathname は / になる", ({ expect }) => {
+    // 準備と実行
+    const path = new RoutePath({ pathname: "", search: "", hash: "" });
+
+    // 検証
+    expect(path.pathname).toBe("/");
+  });
+});
